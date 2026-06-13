@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Strategy — BoutyHunter{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="page-title">Strategy</h2>
+    <span class="text-sm text-muted">Where to focus your efforts</span>
+</div>
+
+<!-- ─── Hot Programs ───────────────────────────────────────────── -->
+{% if hot_programs %}
+<div class="card mb-2">
+    <div class="card-header" style="background:rgba(248,81,73,.06); border-bottom-color:rgba(248,81,73,.2);">
+        🔥 Hot Programs — Temporal Signals Active
+    </div>
+    <div class="card-body">
+        {% for p in hot_programs %}
+            <div class="program-row">
+                <span class="program-rank">#{{ loop.index }}</span>
+                <div class="program-info">
+                    <div class="program-name"><a href="{{ p.url }}" target="_blank">{{ p.name }}</a></div>
+                    <div class="program-meta">
+                        {% for f in p.get('focus_areas', []) %}
+                            {% if f in FOCUS_AREAS %}
+                                <span class="badge badge-cyan">{{ FOCUS_AREAS[f].icon }} {{ FOCUS_AREAS[f].name }}</span>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="text-muted">&middot;</span>
+                        <span>${{ p.get('max_payout_usd', 0)|int|format_number }}</span>
+                    </div>
+                </div>
+                <div style="display:flex; gap:.3rem;">
+                    {% if p.is_new_program %}<span class="signal signal-new">🆕 NEW</span>{% endif %}
+                    {% if p.scope_recently_expanded %}<span class="signal signal-scope">📈 SCOPE+</span>{% endif %}
+                    {% if p.bounty_increased %}<span class="signal signal-bounty">💰 UP</span>{% endif %}
+                    {% if p.has_active_event %}<span class="signal signal-event">🔥 EVENT</span>{% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ─── By Platform ────────────────────────────────────────────── -->
+<div class="strategy-grid">
+    {% for plat_key, progs in by_platform.items() %}
+        {% set plat = PLATFORMS.get(plat_key, {'name': plat_key}) %}
+        <div class="strategy-card">
+            <h3>
+                <span class="badge badge-blue">{{ plat.name }}</span>
+                <span class="text-muted text-sm" style="margin-left:.5rem;">{{ progs|length }} program{{ 's' if progs != 1 else '' }}</span>
+            </h3>
+            <ul class="strategy-list">
+                {% for p in progs[:8] %}
+                    <li>
+                        <a href="{{ p.url }}" target="_blank">{{ p.name }}</a>
+                        <span class="text-muted text-sm" style="margin-left:auto;">${{ p.get('max_payout_usd', 0)|int|format_number }}</span>
+                    </li>
+                {% endfor %}
+                {% if progs|length > 8 %}
+                    <li class="text-muted">... and {{ progs|length - 8 }} more</li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- ─── By Focus Area ──────────────────────────────────────────── -->
+<div class="strategy-grid mt-2">
+    {% for focus_key, progs in by_focus.items() %}
+        {% if focus_key in FOCUS_AREAS %}
+            <div class="strategy-card">
+                <h3>
+                    {{ FOCUS_AREAS[focus_key].icon }} {{ FOCUS_AREAS[focus_key].name }}
+                    <span class="text-muted text-sm" style="margin-left:.5rem;">{{ progs|length }}</span>
+                </h3>
+                <ul class="strategy-list">
+                    {% for p in progs[:6] %}
+                        <li>
+                            <a href="{{ p.url }}" target="_blank">{{ p.name }}</a>
+                            <span class="text-muted text-sm" style="margin-left:auto;">${{ p.get('max_payout_usd', 0)|int|format_number }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<!-- ─── Empty State ────────────────────────────────────────────── -->
+{% if not hot_programs and not by_platform and not by_focus %}
+<div class="card mt-2">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="icon">💡</div>
+            <p>No data to analyze yet.<br>Run a scan first, then come back for strategy recommendations.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Changes — BoutyHunter{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="page-title">Change Detection</h2>
+    <span class="text-sm text-muted">{{ total }} change{{ 's' if total != 1 else '' }} in last {{ days }}d</span>
+</div>
+
+<!-- ─── Time Range Filter ──────────────────────────────────────── -->
+<div class="filters-bar">
+    <span class="filter-label">Last:</span>
+    {% for d in [7, 14, 30] %}
+        <a href="/changes?days={{ d }}" class="filter-chip {% if days == d %}active{% endif %}">{{ d }}d</a>
+    {% endfor %}
+</div>
+
+<!-- ─── Changes List ───────────────────────────────────────────── -->
+<div class="card">
+    <div class="card-header">🔄 Detected Changes</div>
+    <div class="card-body">
+        {% if changes %}
+            <!-- Group by change type -->
+            {% set ns = namespace(groups={}) %}
+            {% for c in changes %}
+                {% set ct = c.change_type %}
+                {% if ct not in ns.groups %}{% set _ = ns.groups.update({ct: []}) %}{% endif %}
+                {% set _ = ns.groups[ct].append(c) %}
+            {% endfor %}
+
+            {% for change_type, items in ns.groups.items() %}
+                <div class="mb-2">
+                    <h3 style="font-size:.9rem; margin-bottom:.5rem;">
+                        {% if 'new' in change_type %}🆕{% elif 'scope' in change_type %}📈{% elif 'bounty' in change_type %}💰{% elif 'event' in change_type %}🔥{% else %}⚡{% endif %}
+                        {{ change_type|replace('_', ' ')|title }} <span class="text-muted text-sm">({{ items|length }})</span>
+                    </h3>
+
+                    {% for c in items %}
+                        <div class="change-item">
+                            <div class="change-details" style="flex:1;">
+                                <div class="change-type">{{ c.program_name }}</div>
+                                {% if c.old_value and c.new_value %}
+                                    <div class="text-sm text-muted">
+                                        {{ (c.old_value[:40] + '...') if c.old_value|length > 40 else c.old_value }}
+                                        →
+                                        {{ (c.new_value[:40] + '...') if c.new_value|length > 40 else c.new_value }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <span class="change-time">{{ c.detected_at[:16] }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+        {% else %}
+            <div class="empty-state">
+                <div class="icon">✅</div>
+                <p>No changes detected in the last {{ days }} days.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

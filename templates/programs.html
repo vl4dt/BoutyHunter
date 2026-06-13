@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Programs — BoutyHunter{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="page-title">Programs</h2>
+    <span class="text-sm text-muted">{{ total }} program{{ 's' if total != 1 else '' }}</span>
+</div>
+
+<!-- ─── Filters ────────────────────────────────────────────────── -->
+<div class="filters-bar">
+    <form method="get" action="/programs" style="display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;">
+
+        <!-- Focus filter -->
+        <div class="filter-group">
+            <span class="filter-label">Focus:</span>
+            {% for key, area in FOCUS_AREAS.items() %}
+                <a href="/programs?focus={{ key }}{% if platform_filter %}&platform={{ platform_filter|join(',') }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="filter-chip {% if key in focus_filter %}active{% endif %}">
+                    {{ area.icon }} {{ area.name }}
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- Platform filter -->
+        <div class="filter-group" style="margin-left:.5rem;">
+            <span class="filter-label">Platform:</span>
+            {% for key, plat in PLATFORMS.items() %}
+                <a href="/programs?{% if focus_filter %}focus={{ focus_filter|join(',') }}&{% endif %}platform={{ key }}{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="filter-chip {% if key in platform_filter %}active{% endif %}">
+                    {{ plat.name }}
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- Search -->
+        <input type="text" name="q" value="{{ search_query }}" placeholder="Search programs..." class="search-input" style="margin-left:auto;">
+    </form>
+</div>
+
+<!-- ─── Programs Table ─────────────────────────────────────────── -->
+<div class="card">
+    {% if programs %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th>Program</th>
+                        <th>Platform</th>
+                        <th>Focus</th>
+                        <th>Payout</th>
+                        <th>Signals</th>
+                        <th style="width:80px; text-align:right;">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in programs %}
+                    <tr>
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td>
+                            <a href="{{ p.url }}" target="_blank" rel="noopener">
+                                {{ p.name }}
+                            </a>
+                            {% if p.description %}
+                                <div class="text-sm text-muted" style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                    {{ p.description[:80] }}{% if p.description|length > 80 %}...{% endif %}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set plat = PLATFORMS.get(p.platform, {}) %}
+                            <span class="badge badge-blue">{{ plat.name or p.platform }}</span>
+                        </td>
+                        <td>
+                            {% for f in p.get('focus_areas', []) %}
+                                {% if f in FOCUS_AREAS %}
+                                    <span class="badge badge-cyan" style="margin-right:.25rem;">{{ FOCUS_AREAS[f].icon }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td style="font-weight:600; white-space:nowrap;">
+                            ${{ p.get('max_payout_usd', 0)|int|format_number }}
+                        </td>
+                        <td>
+                            {% if p.is_new_program %}<span class="signal signal-new">🆕 NEW</span>{% endif %}
+                            {% if p.scope_recently_expanded %}<span class="signal signal-scope">📈 SCOPE+</span>{% endif %}
+                            {% if p.bounty_increased %}<span class="signal signal-bounty">💰 UP</span>{% endif %}
+                            {% if p.has_active_event %}<span class="signal signal-event">🔥 EVENT</span>{% endif %}
+                        </td>
+                        <td style="text-align:right; font-weight:700;">
+                            <span style="color:{% if p.score >= 15 %}var(--accent-green){% elif p.score >= 8 %}var(--accent-blue){% else %}var(--text-muted){% endif %};">
+                                {{ '%+.1f'|format(p.get('score', 0)) }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body">
+            <div class="empty-state">
+                <div class="icon">🎯</div>
+                <p>No programs match your filters.<br>Try broadening the search or running a new scan.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

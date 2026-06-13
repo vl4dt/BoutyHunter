@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Scan History — BoutyHunter{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="page-title">Scan History</h2>
+    <span class="text-sm text-muted">{{ total }} scan{{ 's' if total != 1 else '' }}</span>
+</div>
+
+<!-- ─── Scan Table ─────────────────────────────────────────────── -->
+<div class="card">
+    {% if scans %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th>Date / Time</th>
+                        <th>Mode</th>
+                        <th>Programs Found</th>
+                        <th>New Programs</th>
+                        <th>Changes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in scans %}
+                    <tr>
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td style="white-space:nowrap;">{{ s.scan_time[:16] }}</td>
+                        <td><span class="badge badge-blue">{{ s.mode|upper }}</span></td>
+                        <td style="font-weight:600;">{{ s.programs_found }}</td>
+                        <td>
+                            {% if s.new_programs > 0 %}
+                                <span style="color:var(--accent-green); font-weight:600;">+{{ s.new_programs }}</span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if s.changes_detected > 0 %}
+                                <span style="color:var(--accent-orange); font-weight:600;">{{ s.changes_detected }}</span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body">
+            <div class="empty-state">
+                <div class="icon">📈</div>
+                <p>No scan history yet.<br>Run your first scan to start tracking.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

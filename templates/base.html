@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BoutyHunter{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="app">
+
+    <!-- ─── Sidebar ────────────────────────────────────────────── -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h1>🎯 BoutyHunter</h1>
+            <small>Bug Bounty Opportunity Finder</small>
+        </div>
+
+        <ul class="nav-list">
+            <li class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <a href="/">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+            </li>
+            <li class="nav-item {% if request.endpoint == 'programs' %}active{% endif %}">
+                <a href="/programs">
+                    <span class="nav-icon">🎯</span> Programs
+                </a>
+            </li>
+            <li class="nav-item {% if request.endpoint == 'changes' %}active{% endif %}">
+                <a href="/changes">
+                    <span class="nav-icon">🔄</span> Changes
+                </a>
+            </li>
+            <li class="nav-item {% if request.endpoint == 'scans' %}active{% endif %}">
+                <a href="/scans">
+                    <span class="nav-icon">📈</span> Scan History
+                </a>
+            </li>
+            <li class="nav-item {% if request.endpoint == 'strategy' %}active{% endif %}">
+                <a href="/strategy">
+                    <span class="nav-icon">💡</span> Strategy
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            v0.1.0 &middot; SQLite backend
+        </div>
+    </nav>
+
+    <!-- ─── Main Content ───────────────────────────────────────── -->
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

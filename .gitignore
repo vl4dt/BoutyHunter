@@ -4,9 +4,12 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.venv/
 
 # Database (local state)
 bounty_hunter.db
+bounty_hunter.db-shm
+bounty_hunter.db-wal
 
 # Scan results
 opportunity_scan_*.json
