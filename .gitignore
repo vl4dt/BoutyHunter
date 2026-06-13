@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Database (local state)
+bounty_hunter.db
+
+# Scan results
+opportunity_scan_*.json
+
+# Logs
+logs/
+
+# IDE
+.vscode/
+.idea/

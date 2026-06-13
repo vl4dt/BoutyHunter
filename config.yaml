@@ -1,0 +1,44 @@
+# ─── BoutyHunter Configuration ──────────────────────────────────────
+# Scan settings for opportunity_finder.py
+
+scan:
+  default_focus_areas: ["api", "llm", "mobile"]   # Focus areas to scan by default
+  web_search_enabled: true                         # Enable/disable web search mode
+  max_web_results_per_query: 5                     # Max results per search query
+  output_dir: "."                                  # Where to save JSON results
+
+# ─── Platform API Credentials ────────────────────────────────────────
+# Fill in your credentials below and set enabled: true for each platform.
+# The tool works without any of these — it falls back to web search.
+# See API_INTEGRATION.md for setup details per platform.
+
+platforms:
+
+  # Bugcrowd — most useful for program discovery (has /programs endpoint)
+  bugcrowd:
+    enabled: false
+    api_url: "https://api.bugcrowd.com"
+    token_key: ""       # Your API key
+    token_secret: ""    # Your API secret
+
+  # YesWeHack — requires CSM approval first, then OAuth setup
+  yeswehack:
+    enabled: false
+    api_url: "https://apps.yeswehack.com"
+    client_id: ""
+    client_secret: ""
+    redirect_uri: "http://localhost"
+
+  # Intigriti — primarily org-facing but may have researcher endpoints
+  intigriti:
+    enabled: false
+    api_url: "https://api.intigriti.com"
+    token: ""
+
+  # HackerOne — no public program listing endpoint (org-facing API only)
+  # Not implemented in the API client; use web search for H1 discovery
+  hackerone:
+    enabled: false
+    api_url: "https://api.hackerone.com/v1/"
+    username: ""
+    password: ""
