@@ -116,6 +116,12 @@ def programs():
     get_programs = _db()[0]
     all_programs = get_programs(status_filter="active")
 
+    # Regenerate score breakdown for each program (not stored in DB)
+    from opportunity_finder import score_program, find_platform_key, PLATFORMS as OPP_PLATFORMS
+    for p in all_programs:
+        _, breakdown = score_program(p)
+        p["score_breakdown"] = breakdown
+
     # Apply URL filters
     focus = request.args.get("focus", "").split(",") if request.args.get("focus") else []
     platform = request.args.get("platform", "").split(",") if request.args.get("platform") else []

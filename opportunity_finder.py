@@ -106,31 +106,71 @@ COMPETITION_SCORES = {
     "extreme": 10, "high": 7, "moderate": 4, "low": 2, "very_low": 1,
 }
 
-# ─── Web Search Queries ────────────────────────────────────────────────
+# ─── Web Search Queries (target program pages only) ──────────────
 
 SEARCH_QUERIES = [
-    # New program launches — platform-specific
-    ("site:hackerone.com \"bug bounty\" api security", "Platform: HackerOne"),
-    ("site:intigriti.com \"bug bounty\" api security", "Platform: Intigriti"),
-    ("site:bugcrowd.com \"bug bounty\" api security", "Platform: Bugcrowd"),
-    ("site:yeswehack.com \"bug bounty\" api security", "Platform: YesWeHack"),
+    # HackerOne — program listing and individual programs
+    ('site:hackerone.com "bug bounty" inurl:/programs', "Platform: HackerOne"),
+    ('site:hackerone.com/bug-bounty-programs', "Platform: HackerOne"),
+    ('site:hackerone.com "api security" OR "API testing" bug bounty program', "Platform: HackerOne"),
 
-    # LLM/AI focus — platform-specific
-    ("site:hackerone.com \"bug bounty\" llm ai prompt injection", "LLM: HackerOne"),
-    ("site:intigriti.com \"bug bounty\" llm ai prompt injection", "LLM: Intigriti"),
-    ("site:bugcrowd.com \"bug bounty\" llm ai prompt injection", "LLM: Bugcrowd"),
-    ("site:yeswehack.com \"bug bounty\" llm ai prompt injection", "LLM: YesWeHack"),
+    # Intigriti — program pages only
+    ('site:intigriti.com/programs bug bounty api', "Platform: Intigriti"),
+    ('site:app.intigriti.com/programs bug bounty', "Platform: Intigriti"),
 
-    # Mobile focus — platform-specific
-    ("site:hackerone.com \"bug bounty\" mobile app security", "Mobile: HackerOne"),
-    ("site:intigriti.com \"bug bounty\" mobile app security", "Mobile: Intigriti"),
-    ("site:bugcrowd.com \"bug bounty\" mobile app security", "Mobile: Bugcrowd"),
-    ("site:yeswehack.com \"bug bounty\" mobile app security", "Mobile: YesWeHack"),
+    # Bugcrowd — engagement pages only
+    ('site:bugcrowd.com/engagements bug bounty api', "Platform: Bugcrowd"),
+    ('site:bugcrowd.com "api security" OR "API testing" program', "Platform: Bugcrowd"),
 
-    # General — new launches and beginner-friendly
-    ("new bug bounty programs launched 2025 2026 api llm mobile", "New Programs"),
-    ("best bug bounty programs for beginners api security 2025", "Beginner-Friendly"),
+    # YesWeHack — program pages only
+    ('site:yeswehack.com/programs bug bounty api', "Platform: YesWeHack"),
+    ('site:yeswehack.com "bug bounty" program listing', "Platform: YesWeHack"),
 ]
+
+# ─── URL Filters (exclude non-program content) ──────────────────────
+
+URL_EXCLUDE_PATTERNS = [
+    # Blog posts and articles
+    "/blog/", "/blogs/", "/article/", "/articles/",
+    "/researcher/", "/researchers/", "/resources/",
+    "/levelup/", "/glossary/", "/learn/",
+    # Vulnerability reports
+    "/reports/", "/report/",
+]
+
+def is_program_url(url: str) -> bool:
+    """Check if a URL points to an actual bug bounty program (not blog/report/article)."""
+    url_lower = url.lower()
+
+    # Exclude known non-program patterns
+    for pattern in URL_EXCLUDE_PATTERNS:
+        if pattern.lower() in url_lower:
+            return False
+
+    # Must be on a known platform domain and match program path patterns
+    # HackerOne: /<program-slug> (top-level path segment, not /reports/ or /blog/)
+    if "hackerone.com" in url_lower:
+        # Exclude listing pages
+        if "/bug-bounty-programs" in url_lower:
+            return False
+        # Program URLs are like hackerone.com/<slug>
+        path = url_lower.split("hackerone.com", 1)[-1]
+        if path and not path.startswith(("/reports/", "/blog/", "/resources/", "/learn/", "/programs")):
+            return True
+
+    # Intigriti: /programs/<slug>
+    if "intigriti.com" in url_lower and ("/programs/" in url_lower or "/program/" in url_lower):
+        return True
+
+    # Bugcrowd: /engagements/<slug>
+    if "bugcrowd.com" in url_lower and ("/engagements/" in url_lower or "/engagement/" in url_lower):
+        return True
+
+    # YesWeHack: /programs/<slug> or /program/
+    if "yeswehack.com" in url_lower and ("/programs/" in url_lower or "/program/" in url_lower):
+        return True
+
+    return False
 
 # ─── Helpers ────────────────────────────────────────────────────────────
 
@@ -145,29 +185,56 @@ def find_platform_key(url_or_name: str) -> str | None:
             return key
     return None
 
-def score_program(program: dict) -> float:
-    """Score a program. Higher = better opportunity."""
+def score_program(program: dict) -> tuple[float, list[str]]:
+    """Score a program. Returns (score, breakdown_reasons).
+
+    Higher score = better opportunity.
+    breakdown_reasons is a list of human-readable strings explaining why this
+    program ranks where it does — each reason shows the factor and its contribution.
+    """
     platform_key = find_platform_key(program.get("url", "")) or find_platform_key(program.get("platform", ""))
     if not platform_key:
-        return 0
+        return 0, ["Unknown platform — no score"]
 
     platform = PLATFORMS[platform_key]
+    reasons: list[str] = []
 
     # Competition penalty (lower competition = higher score)
-    comp_score = COMPETITION_SCORES.get(platform["competition_level"], 5)
+    comp_level = platform["competition_level"]
+    comp_score = COMPETITION_SCORES.get(comp_level, 5)
+    comp_bonus = -comp_score
+    comp_labels = {
+        "extreme": "EXTREME — many hunters competing", "high": "HIGH — crowded",
+        "moderate": "MODERATE — some competition", "low": "LOW — fewer hunters",
+        "very_low": "VERY LOW — almost no competition",
+    }
+    reasons.append(f"Competition: {comp_labels.get(comp_level, comp_level)} → {comp_bonus:+.0f}")
 
     # Triage speed bonus (faster triage = higher score)
-    triage_bonus = max(0, 10 - platform["triage_speed_days"])
+    triage_days = platform["triage_speed_days"]
+    triage_bonus = max(0, 10 - triage_days)
+    reasons.append(f"Triage speed: {triage_days}d turnaround → +{triage_bonus}")
 
     # Focus area bonus: LLM/AI is hottest opportunity right now
-    focus_bonus_map = {"llm": 8, "mobile": 5, "api": 3}
-    focus_bonus = sum(focus_bonus_map.get(area, 0) for area in program.get("focus_areas", []))
+    focus_bonus_map = {"llm": (8, "LLM/AI — emerging field, least competition"),
+                       "mobile": (5, "Mobile — specialized tooling barrier"),
+                       "api": (3, "API — backend dev experience advantage")}
+    focus_areas = program.get("focus_areas", [])
+    for area in focus_areas:
+        if area in focus_bonus_map:
+            bonus, label = focus_bonus_map[area]
+            reasons.append(f"Focus: {label} → +{bonus}")
 
     # Payout bonus (higher max payout = more serious program)
     max_payout = program.get("max_payout_usd", 0) or 0
     payout_bonus = min(5, max_payout / 25000) if max_payout else 0
+    reasons.append(f"Payout: ${max_payout:,} max → +{payout_bonus:.1f}")
 
-    return triage_bonus + focus_bonus - comp_score + payout_bonus
+    total = triage_bonus - comp_score + sum(
+        focus_bonus_map.get(a, (0, ""))[0] for a in focus_areas if a in focus_bonus_map
+    ) + payout_bonus
+
+    return round(total, 1), reasons
 
 # ─── Web Search Mode ──────────────────────────────────────────────────
 
@@ -228,15 +295,21 @@ def run_web_search(platform_filter=None):
         except Exception as e:
             logger.error("Web search error for '%s': %s", query[:50], e)
 
+    # ─── Filter: keep only actual program URLs ──────────────────────
+    filtered = [r for r in results if is_program_url(r.get("url", ""))]
+    excluded_count = len(results) - len(filtered)
+    if excluded_count > 0:
+        logger.info("Filtered out %d non-program results (blogs, reports, articles)", excluded_count)
+
     # Deduplicate by URL
     seen = set()
     unique = []
-    for r in results:
+    for r in filtered:
         if r.get("url") not in seen:
             seen.add(r["url"])
             unique.append(r)
 
-    logger.info("Web search found %d unique results", len(unique))
+    logger.info("Web search found %d program results (after filtering)", len(unique))
     return unique
 
 # ─── Output Formatting ────────────────────────────────────────────────
@@ -259,7 +332,7 @@ def comp_label(level):
     }.get(level, "?")
 
 def print_programs(programs):
-    """Print ranked programs with temporal signals."""
+    """Print ranked programs with temporal signals and score breakdown."""
     if not programs:
         print("\n  No programs found.")
         return
@@ -267,6 +340,7 @@ def print_programs(programs):
     print()
     print("=" * 72)
     print("  📋 DISCOVERED PROGRAMS (Ranked by opportunity quality)")
+    print("     Higher score = better opportunity — see breakdown below each")
     print("=" * 72)
 
     for i, p in enumerate(programs, 1):
@@ -293,6 +367,13 @@ def print_programs(programs):
         print(f"      Platform: {PLATFORMS[platform_key]['name'] if platform_key else 'Unknown'} | Focus: {focus_tags}")
         print(f"      Competition: {comp_label(comp_level)}")
         print(f"      Max Payout: ${p.get('max_payout_usd', 0):,} USD")
+
+        # Score breakdown — WHY this rank
+        reasons = p.get("score_breakdown", [])
+        if reasons:
+            print(f"      ── Why #{i}? ──")
+            for reason in reasons:
+                print(f"         • {reason}")
 
         # Show scope details if available
         scope = p.get("scope_details", {}) or {}
@@ -560,9 +641,14 @@ Examples:
                 p["first_seen"] = datetime.now().isoformat()
 
             # Calculate base score + temporal boost
-            base_score = score_program(p)
+            base_score, breakdown = score_program(p)
             temporal_boost = get_temporal_boost(p, days=7)
             final_score = round(base_score + temporal_boost, 1)
+
+            # Attach breakdown to the program for display
+            p["score_breakdown"] = breakdown
+            if temporal_boost > 0:
+                p["score_breakdown"].append(f"Temporal boost: active signal → +{temporal_boost:.1f}")
 
             # Set temporal signal flags for display
             p["score"] = final_score

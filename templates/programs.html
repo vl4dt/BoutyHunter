@@ -95,6 +95,18 @@
                             </span>
                         </td>
                     </tr>
+                    <!-- Score breakdown row -->
+                    {% if p.score_breakdown %}
+                    <tr class="breakdown-row">
+                        <td></td>
+                        <td colspan="6" style="padding:.25rem 1rem .75rem; font-size:13px; color:var(--text-muted); border-bottom:1px solid var(--border-color);">
+                            <strong>Why #{{ loop.index }}?</strong>
+                            {% for reason in p.score_breakdown %}
+                                <span style="display:inline-block; margin:.25rem .5rem .25rem 0; padding:.15rem .5rem; background:var(--card-bg); border-radius:4px; font-size:12px;">{{ reason }}</span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endif %}
                     {% endfor %}
                 </tbody>
             </table>
