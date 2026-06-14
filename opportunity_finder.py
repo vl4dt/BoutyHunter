@@ -188,11 +188,11 @@ def print_header():
 
     focus_names = " | ".join(FOCUS_AREAS[f]["name"] for f in ("api", "llm", "mobile"))
     print()
-    print("╔══════════════════════════════════════════════════════════╗", flush=True)
-    print("║       🎯 BoutyHunter — Bug Bounty Opportunity Finder     ║", flush=True)
-    print("╠══════════════════════════════════════════════════════════╣", flush=True)
-    print(f"║  Focus: {focus_names}                              ║", flush=True)
-    print("╚══════════════════════════════════════════════════════════╝", flush=True)
+    print("╔════════════════════════════════════════════════════════════════╗", flush=True)
+    print("║       🎯 BoutyHunter — Bug Bounty Opportunity Finder           ║", flush=True)
+    print("╠════════════════════════════════════════════════════════════════╣", flush=True)
+    print(f"║  Focus: {focus_names}                                    ║", flush=True)
+    print("╚════════════════════════════════════════════════════════════════╝", flush=True)
     sys.stdout.flush()
 
 def comp_label(level):

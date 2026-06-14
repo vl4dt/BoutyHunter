@@ -79,6 +79,24 @@ def dashboard():
         for f in p.get("focus_areas", []):
             focus_counts[f] = focus_counts.get(f, 0) + 1
 
+    # Check which platforms have API credentials configured
+    from api_client import load_config as _load_api_config
+    try:
+        api_config = _load_api_config()
+        platform_status = {}
+        for plat_key in ("bugcrowd", "yeswehack", "intigriti"):
+            pcfg = api_config.get("platforms", {}).get(plat_key, {})
+            platform_status[plat_key] = {
+                "enabled": bool(pcfg.get("enabled", False)),
+                "has_creds": bool(
+                    (plat_key == "bugcrowd" and pcfg.get("token_key") and pcfg.get("token_secret")) or
+                    (plat_key == "yeswehack" and pcfg.get("client_id") and pcfg.get("client_secret")) or
+                    (plat_key == "intigriti" and pcfg.get("token")),
+                ),
+            }
+    except Exception:
+        platform_status = {}
+
     return render_template(
         "dashboard.html",
         total=total,
@@ -89,6 +107,8 @@ def dashboard():
         top_programs=top_programs,
         focus_counts=focus_counts,
         recent_changes=recent_changes[:10],
+        scan_history=scan_history,
+        platform_status=platform_status,
         FOCUS_AREAS=FOCUS_AREAS,
     )
 

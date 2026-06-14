@@ -32,6 +32,26 @@
     </div>
 </div>
 
+<!-- ─── Platform Status ────────────────────────────────────────── -->
+<div class="card mt-2">
+    <div class="card-header">🔑 API Credentials Status</div>
+    <div class="card-body" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
+        {% for plat_key in ["bugcrowd", "yeswehack", "intigriti"] %}
+            {% set ps = platform_status.get(plat_key, {}) %}
+            <div style="padding:.75rem; border-radius:8px; background:var(--bg-card); border:1px solid var(--border-color);">
+                <div style="font-weight:600; margin-bottom:.25rem;">{{ plat_key|title }}</div>
+                {% if ps.get("enabled") and ps.get("has_creds") %}
+                    <span class="badge badge-green" style="font-size:.75rem;">✅ Ready</span>
+                {% elif ps.get("enabled") %}
+                    <span class="badge badge-orange" style="font-size:.75rem;">⚠️ Missing credentials</span>
+                {% else %}
+                    <span class="badge badge-gray" style="font-size:.75rem;">❌ Disabled</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
 <!-- ─── Two Column Layout ──────────────────────────────────────── -->
 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
 
@@ -61,9 +81,17 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="empty-state">
-                    <div class="icon">🔍</div>
-                    <p>No programs discovered yet.<br>Run a scan to start finding opportunities.</p>
+                <div class="empty-state" style="padding:2rem; text-align:center;">
+                    <div style="font-size:3rem; margin-bottom:.5rem;">🔍</div>
+                    <p style="margin-bottom:1rem;">No programs discovered yet.</p>
+
+                    {% if not platform_status %}
+                        <p class="text-muted" style="margin-bottom:1rem;">API credentials are not configured. Edit <code>config.yaml</code> to enable API discovery, or run a web search:</p>
+                        <pre style="background:var(--bg-card); padding:.75rem; border-radius:6px; text-align:left; font-size:.85rem;"><code>python3 opportunity_finder.py --mode search</code></pre>
+                    {% else %}
+                        <p class="text-muted" style="margin-bottom:1rem;">Run a scan to start finding opportunities:</p>
+                        <pre style="background:var(--bg-card); padding:.75rem; border-radius:6px; text-align:left; font-size:.85rem;"><code>python3 opportunity_finder.py --mode all</code></pre>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>
@@ -95,6 +123,46 @@
     </div>
 
 </div>
+
+<!-- ─── Scan History ───────────────────────────────────────────── -->
+{% if scan_history %}
+<div class="card mt-2">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        📈 Scan History (last 30 days)
+        <a href="/scans" class="text-sm text-muted" style="text-decoration:none;">View all →</a>
+    </div>
+    <div class="card-body">
+        <table style="width:100%; border-collapse:collapse; font-size:.875rem;">
+            <thead>
+                <tr style="border-bottom:1px solid var(--border-color); text-align:left;">
+                    <th style="padding:.5rem .75rem; color:var(--text-muted);">Date</th>
+                    <th style="padding:.5rem .75rem; color:var(--text-muted);">Mode</th>
+                    <th style="padding:.5rem .75rem; color:var(--text-muted); text-align:center;">Found</th>
+                    <th style="padding:.5rem .75rem; color:var(--text-muted); text-align:center;">New</th>
+                    <th style="padding:.5rem .75rem; color:var(--text-muted); text-align:center;">Changes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in scan_history[:10] %}
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:.5rem .75rem;">{{ s.scan_time[:16] }}</td>
+                        <td style="padding:.5rem .75rem;">
+                            {% if s.mode == 'all' %}🔍 All{% elif s.mode == 'api' %}🌐 API{% else %}🔎 Search{% endif %}
+                        </td>
+                        <td style="padding:.5rem .75rem; text-align:center;">{{ s.programs_found }}</td>
+                        <td style="padding:.5rem .75rem; text-align:center;">
+                            {% if s.new_programs > 0 %}<span class="badge badge-green" style="font-size:.7rem;">+{{ s.new_programs }}</span>{% else %}—{% endif %}
+                        </td>
+                        <td style="padding:.5rem .75rem; text-align:center;">
+                            {% if s.changes_detected > 0 %}<span class="badge badge-orange" style="font-size:.7rem;">{{ s.changes_detected }}</span>{% else %}—{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 
 <!-- ─── Focus Area Breakdown ───────────────────────────────────── -->
 {% if focus_counts %}
