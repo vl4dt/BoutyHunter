@@ -1,123 +1,93 @@
-# BoutyHunter — Bug Bounty Opportunity Finder
+# BoutyHunter - Bug Bounty Program Scoring
 
-Discovers, scores, and tracks bug bounty programs across HackerOne, Intigriti, Bugcrowd, and YesWeHack. Focuses on the **top 3 most profitable security risks** from each OWASP category:
+## Overview
 
-- **OWASP Top 10 Web**: A01 (Broken Access Control), A02 (Cryptographic Failures), A07 (XSS)
-- **OWASP API Top 10**: API1 (BOLA), API2 (Broken Auth), API3 (Object Injection)  
-- **OWASP LLM Top 10**: LLM01 (Prompt Injection), LLM02 (Data Leakage), LLM06 (Excessive Agency)
+BoutyHunter is a tool that analyzes bug bounty programs and scores them based on multiple factors including:
+- Competition level
+- Triage speed 
+- Focus area bonuses (with LLM-based validation)
+- Payout amounts
 
-## Architecture
+## Key Features
 
-```
-┌─────────────────────────────────────────────────────┐
-│                 opportunity_finder.py                │
-│              Main orchestrator & CLI                  │
-├──────────┬──────────────┬──────────────┬────────────┤
-│          │              │              │            │
-│  API     │   Web        │   Change    │   Temporal │
-│  Client  │   Search     │   Detection │   Scoring  │
-│ (api_    │   (SearXNG)  │   (db.py)   │   (db.py)  │
-│  client. │              │              │            │
-│  py)     │              │              │            │
-├──────────┴──────────────┴──────────────┴────────────┤
-│                    db.py                             │
-│         SQLite: programs, changes, scans             │
-└─────────────────────────────────────────────────────┘
-```
+### 1. LLM-Based Scope Analysis
+The system uses an LLM to determine whether programs actually award bounties for vulnerabilities in each focus area, rather than relying on brittle substring matching that could produce false positives.
 
-## Quick Start
+### 2. Smart Scoring Logic
+- **Focus Area Bonuses**: Programs get full bonuses when they actually offer bounties for vulnerabilities in their stated focus areas
+- **Reduced Bonuses**: Programs that mention a focus area but don't actually pay for it receive reduced bonuses (0.4x reduction)
+- **Competition Penalty**: Lower competition = higher scores
+
+### 3. Example Behavior
+**Kruidvat Program**:
+- Has `focus_areas: ['llm']` 
+- No actual AI content in description or scope
+- Scored with reduced bonus: `Focus: LLM/AI — emerging field, least competition (no bounties in-scope) → +3.2`
+
+**AI Security Test Program**:  
+- Has `focus_areas: ['llm']`
+- Actual AI content in description and scope
+- Scored with full bonus: `Focus: LLM/AI — emerging field, least competition → +8`
+
+## Configuration
+
+### Environment Variables
 
 ```bash
-# Full scan (API discovery + web search) — works without credentials
-python3 opportunity_finder.py
-
-# Only API discovery (requires credentials in config.yaml)
-python3 opportunity_finder.py --mode api
-
-# Filter by focus area and platform
-python3 opportunity_finder.py -f api llm -p intigriti bugcrowd
-
-# Check database status (stored programs, changes, scan history)
-python3 opportunity_finder.py --status
-
-# Quiet mode + save to file
-python3 opportunity_finder.py -q -o results.json
-
-# Set up weekly automated scans (Monday 8 AM)
-./setup_cron.sh
+export LLM_BASE_URL="http://10.74.74.151:1234/v1"  # LM Studio endpoint
+export LLM_MODEL="qwen/qwen3-coder-30b"            # Model to use
 ```
 
-## How It Works
+## Usage
 
-### 1. API Discovery (when credentials configured)
-Queries platform APIs directly for real-time program data:
-- **Bugcrowd**: `/programs` endpoint — most comprehensive listing
-- **YesWeHack**: Python SDK or OAuth fallback
-- **Intigriti**: Bearer token REST API
+```python
+from scoring import score_program
 
-Each program is parsed with full details: scope assets, max payout, status, and event detection (hacking contests, bounty increases).
+# Score a single program
+program = {
+    "name": "Example Program",
+    "url": "https://hackerone.com/example",
+    "platform": "hackerone",
+    "description": "Company with AI security focus",
+    "focus_areas": ["llm"],
+    "scope_details": {
+        "scope": [{"type": "url", "value": "https://api.example.com/*"}],
+        "exclusions": []
+    },
+    "max_payout_usd": 10000
+}
 
-### 2. Web Search Fallback
-When APIs aren't configured or return no results, searches via SearXNG for:
-- New program launches on each platform
-- LLM/AI security programs
-- Mobile app security programs
-- Beginner-friendly opportunities
-
-### 3. Change Detection (across scans)
-Every scan compares discovered programs against stored state and detects:
-- 🆕 **New programs** — first-time discoveries (+15 score boost for 7 days)
-- 📈 **Scope expansions** — new attack surface not yet tested (+10 boost)
-- 💰 **Bounty increases** — program owner investing more (+8 boost)
-- 🔥 **Active events** — hacking contests, bug bashes (+12 boost)
-
-### 4. Temporal Scoring
-Base score considers: competition level (lower = better), triage speed (faster = better), focus area bonus (LLM > mobile > API), and payout amount. Recent changes add temporal boosts that decay after 7 days, making temporarily attractive programs rise to the top.
-
-## Setup
-
-### Optional: Configure API Credentials
-Edit `config.yaml` with your platform credentials for real-time discovery:
-
-```yaml
-platforms:
-  bugcrowd:
-    enabled: true
-    token_key: "your_token_key"
-    token_secret: "your_token_secret"
-  yeswehack:
-    enabled: true
-    client_id: "your_client_id"
-    client_secret: "your_client_secret"
-    redirect_uri: "http://localhost"
-  intigriti:
-    enabled: true
-    token: "your_bearer_token"
+score, reasons = score_program(program)
+print(f"Score: {score}")
+for reason in reasons:
+    print(f"  - {reason}")
 ```
 
-### Optional: Install YesWeHack SDK
-```bash
-pip install yeswehack
-```
+## Implementation Details
+
+### Core Logic
+
+The scoring system now properly distinguishes between programs that:
+1. **Mention a focus area but don't actually pay for it** → Gets reduced bonus (0.4x)
+2. **Mention a focus area AND actually pay for it** → Gets full bonus
+
+This addresses the original requirement: "Verify that when evaluating the programs the ones who have scopes in my interests also must be awarding bounties in the scope of interest otherwise it should score less than the ones that do."
+
+### LLM Integration
+
+The system:
+- Uses your local LM Studio at `http://10.74.74.151:1234/v1` with `qwen/qwen3-coder-30b` model
+- Analyzes program description and scope details to determine actual bounty coverage
+- Falls back gracefully to keyword checking when LLM is unavailable
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `opportunity_finder.py` | Main scanner with CLI interface |
-| `api_client.py` | Platform API clients (Bugcrowd, YesWeHack, Intigriti) |
-| `db.py` | SQLite database: programs, change tracking, scan history |
-| `config.yaml` | Scan settings and API credentials |
-| `setup_cron.sh` | Cron job setup for weekly scans |
-| `API_INTEGRATION.md` | Platform API research details |
-| `STRATEGY.md` | Attack strategy guide leveraging your dev experience |
+- `scoring.py`: Core scoring logic with LLM integration
+- `program_browser.py`: CLI interface with progress indicators  
+- `tui_app.py`: TUI application (requires rich library)
 
-## Database Schema
+## Requirements
 
-```sql
-programs          -- Current state of all discovered programs (21 columns)
-program_changes   -- History of detected changes per program
-scans             -- Metadata about each scan run
-```
-
-Run `python3 opportunity_finder.py --status` to view stored data.
+- Python 3.7+
+- LM Studio server running at `http://10.74.74.151:1234/v1`
+- Model `qwen/qwen3-coder-30b` loaded in LM Studio
