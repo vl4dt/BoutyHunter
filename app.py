@@ -60,7 +60,7 @@ def dashboard():
     """Main dashboard with overview stats and top programs."""
     get_programs, get_changes, get_scans = _db()
 
-    all_programs = get_programs(status_filter="active")
+    all_programs = get_programs()  # show ALL programs — open, suspended, unknown
     recent_changes = get_changes(days=7)
     scan_history = get_scans(days=30)
 
@@ -70,8 +70,12 @@ def dashboard():
     event_count = sum(1 for p in all_programs if p.get("has_active_event"))
     change_count = len(recent_changes)
 
-    # Top programs by score
+    # Top programs by score — with breakdown
+    from scoring import score_program
     top_programs = sorted(all_programs, key=lambda x: x.get("score", 0), reverse=True)[:8]
+    for p in top_programs:
+        _, breakdown = score_program(p)
+        p["score_breakdown"] = breakdown
 
     # Focus area breakdown
     focus_counts = {}
@@ -84,15 +88,17 @@ def dashboard():
     try:
         api_config = _load_api_config()
         platform_status = {}
-        for plat_key in ("bugcrowd", "yeswehack", "intigriti"):
+        for plat_key in ("hackerone", "intigriti"):
             pcfg = api_config.get("platforms", {}).get(plat_key, {})
+            # HackerOne: needs username + token (Basic auth)
+            # Intigriti: needs token (Bearer auth)
+            if plat_key == "hackerone":
+                has_creds = bool(pcfg.get("username") and pcfg.get("token"))
+            else:
+                has_creds = bool(pcfg.get("token"))
             platform_status[plat_key] = {
                 "enabled": bool(pcfg.get("enabled", False)),
-                "has_creds": bool(
-                    (plat_key == "bugcrowd" and pcfg.get("token_key") and pcfg.get("token_secret")) or
-                    (plat_key == "yeswehack" and pcfg.get("client_id") and pcfg.get("client_secret")) or
-                    (plat_key == "intigriti" and pcfg.get("token")),
-                ),
+                "has_creds": has_creds,
             }
     except Exception:
         platform_status = {}
@@ -110,13 +116,14 @@ def dashboard():
         scan_history=scan_history,
         platform_status=platform_status,
         FOCUS_AREAS=FOCUS_AREAS,
+        PLATFORMS=PLATFORMS,
     )
 
 @app.route("/programs")
 def programs():
     """Full program list with filters."""
     get_programs = _db()[0]
-    all_programs = get_programs(status_filter="active")
+    all_programs = get_programs()  # show ALL programs
 
     # Regenerate score breakdown for each program (not stored in DB)
     from scoring import score_program
@@ -193,37 +200,66 @@ def scans():
 def strategy():
     """Strategy recommendations."""
     get_programs = _db()[0]
-    all_programs = get_programs(status_filter="active")
+    all_programs = get_programs()  # show ALL programs
 
-    # Group by platform
+    # Group by platform, sorted by score desc
     by_platform = {}
     for p in all_programs:
         plat = p.get("platform", "unknown")
         if plat not in by_platform:
             by_platform[plat] = []
         by_platform[plat].append(p)
+    for plat_key in by_platform:
+        by_platform[plat_key].sort(key=lambda x: x.get("score", 0), reverse=True)
 
     # Hot programs (temporal signals)
-    hot = [p for p in all_programs if any([
+    hot_programs = [p for p in all_programs if any([
         p.get("is_new_program"),
         p.get("scope_recently_expanded"),
         p.get("bounty_increased"),
         p.get("has_active_event"),
     ])]
+    hot_programs.sort(key=lambda x: x.get("score", 0), reverse=True)
 
-    # By focus area
-    by_focus = {}
-    for p in all_programs:
-        for f in p.get("focus_areas", []):
-            if f not in by_focus:
-                by_focus[f] = []
-            by_focus[f].append(p)
+    # Payout tiers (open programs only)
+    whale_count = sum(1 for p in all_programs if (p.get("max_payout_usd") or 0) >= 50000 and p.get("status", "") == "open")
+    high_value_count = sum(1 for p in all_programs if (p.get("max_payout_usd") or 0) >= 20000 and p.get("status", "") == "open")
+    mid_tier_count = sum(1 for p in all_programs if (p.get("max_payout_usd") or 0) >= 10000 and p.get("status", "") == "open")
 
     return render_template(
         "strategy.html",
         by_platform=by_platform,
-        hot_programs=hot,
-        by_focus=by_focus,
+        hot_programs=hot_programs[:8],
+        whale_count=whale_count,
+        high_value_count=high_value_count,
+        mid_tier_count=mid_tier_count,
+        FOCUS_AREAS=FOCUS_AREAS,
+        PLATFORMS=PLATFORMS,
+    )
+
+@app.route("/program/<int:program_id>")
+def program_detail(program_id):
+    """Detailed view of a single program with full score breakdown."""
+    from scoring import score_program
+    get_programs = _db()[0]
+    all_programs = get_programs()
+    prog = next((p for p in all_programs if p["id"] == program_id), None)
+    if not prog:
+        return "Program not found", 404
+
+    score, breakdown = score_program(prog)
+    prog["score_breakdown"] = breakdown
+
+    # Get changes for this program
+    get_changes = _db()[1]
+    prog_changes = get_changes(days=30, program_id=program_id)
+
+    return render_template(
+        "program_detail.html",
+        program=prog,
+        score=score,
+        breakdown=breakdown,
+        changes=prog_changes,
         FOCUS_AREAS=FOCUS_AREAS,
         PLATFORMS=PLATFORMS,
     )

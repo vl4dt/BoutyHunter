@@ -49,23 +49,21 @@
                         <th style="width:40px;">#</th>
                         <th>Program</th>
                         <th>Platform</th>
-                        <th>Focus</th>
                         <th>Payout</th>
+                        <th>Status</th>
                         <th>Signals</th>
                         <th style="width:80px; text-align:right;">Score</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for p in programs %}
-                    <tr>
+                    <tr style="cursor:pointer;" onclick="window.location='/program/{{ p.id }}'" title="Click to see full details and score breakdown">
                         <td class="text-muted">{{ loop.index }}</td>
                         <td>
-                            <a href="{{ p.url }}" target="_blank" rel="noopener">
-                                {{ p.name }}
-                            </a>
+                            <div style="font-weight:600; color:var(--accent-blue);">{{ p.name }}</div>
                             {% if p.description %}
-                                <div class="text-sm text-muted" style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                    {{ p.description[:80] }}{% if p.description|length > 80 %}...{% endif %}
+                                <div class="text-sm text-muted" style="max-width:350px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                    {{ p.description[:100] }}{% if p.description|length > 100 %}...{% endif %}
                                 </div>
                             {% endif %}
                         </td>
@@ -73,36 +71,38 @@
                             {% set plat = PLATFORMS.get(p.platform, {}) %}
                             <span class="badge badge-blue">{{ plat.name or p.platform }}</span>
                         </td>
-                        <td>
-                            {% for f in p.get('focus_areas', []) %}
-                                {% if f in FOCUS_AREAS %}
-                                    <span class="badge badge-cyan" style="margin-right:.25rem;">{{ FOCUS_AREAS[f].icon }}</span>
-                                {% endif %}
-                            {% endfor %}
-                        </td>
                         <td style="font-weight:600; white-space:nowrap;">
                             ${{ p.get('max_payout_usd', 0)|int|format_number }}
                         </td>
                         <td>
-                            {% if p.is_new_program %}<span class="signal signal-new">🆕 NEW</span>{% endif %}
-                            {% if p.scope_recently_expanded %}<span class="signal signal-scope">📈 SCOPE+</span>{% endif %}
-                            {% if p.bounty_increased %}<span class="signal signal-bounty">💰 UP</span>{% endif %}
-                            {% if p.has_active_event %}<span class="signal signal-event">🔥 EVENT</span>{% endif %}
+                            {% if p.status == 'open' %}
+                                <span class="badge badge-green">Open</span>
+                            {% elif p.status == 'suspended' %}
+                                <span class="badge badge-orange">Suspended</span>
+                            {% else %}
+                                <span class="badge badge-gray">{{ p.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p.is_new_program %}<span class="signal signal-new" title="New program — less competition">🆕 NEW</span>{% endif %}
+                            {% if p.scope_recently_expanded %}<span class="signal signal-scope" title="Scope expanded — new attack surface">📈 SCOPE+</span>{% endif %}
+                            {% if p.bounty_increased %}<span class="signal signal-bounty" title="Bounty increased — more investment">💰 UP</span>{% endif %}
+                            {% if p.has_active_event %}<span class="signal signal-event" title="Active event — time-limited opportunity">🔥 EVENT</span>{% endif %}
                         </td>
                         <td style="text-align:right; font-weight:700;">
-                            <span style="color:{% if p.score >= 15 %}var(--accent-green){% elif p.score >= 8 %}var(--accent-blue){% else %}var(--text-muted){% endif %};">
+                            <span style="color:{% if p.score >= 20 %}var(--accent-green){% elif p.score >= 12 %}var(--accent-blue){% else %}var(--text-muted){% endif %};">
                                 {{ '%+.1f'|format(p.get('score', 0)) }}
                             </span>
                         </td>
                     </tr>
-                    <!-- Score breakdown row -->
+                    <!-- Score breakdown row — expandable -->
                     {% if p.score_breakdown %}
-                    <tr class="breakdown-row">
+                    <tr class="breakdown-row" onclick="event.stopPropagation()">
                         <td></td>
                         <td colspan="6" style="padding:.25rem 1rem .75rem; font-size:13px; color:var(--text-muted); border-bottom:1px solid var(--border-color);">
-                            <strong>Why #{{ loop.index }}?</strong>
+                            <strong style="font-size:12px;">Why ranked #{{ loop.index }}?</strong>
                             {% for reason in p.score_breakdown %}
-                                <span style="display:inline-block; margin:.25rem .5rem .25rem 0; padding:.15rem .5rem; background:var(--card-bg); border-radius:4px; font-size:12px;">{{ reason }}</span>
+                                <span style="display:inline-block; margin:.25rem .4rem .25rem 0; padding:.15rem .5rem; background:var(--card-bg); border-radius:4px; font-size:12px;">{{ reason }}</span>
                             {% endfor %}
                         </td>
                     </tr>

@@ -5,11 +5,13 @@ BoutyHunter — Platform API Client Module
 Integrates with bug bounty platform APIs to discover programs dynamically.
 Fetches detailed scope info, bounty amounts, and detects special events.
 
-Implemented:
-  - Bugcrowd:    /programs endpoint (most useful for discovery)
-  - YesWeHack:   Python SDK or OAuth fallback
-  - Intigriti:   REST API with program data
-  - HackerOne:   No public program listing — skipped
+Implemented (researcher-facing APIs):
+  - Intigriti:   /external/researcher/v1/programs (Bearer token)
+  - HackerOne:   /v1/programs (Basic auth — username + API token)
+
+Not implemented (no researcher-facing program listing API):
+  - Bugcrowd:    Only org-facing API exists
+  - YesWeHack:   Requires CSM approval, only org-facing
 
 Usage:
     from api_client import PlatformClient, load_config
@@ -48,13 +50,13 @@ class BasePlatformClient(ABC):
     Subclasses only need to implement:
       - get_programs() → list of raw dicts from the API
       - parse_raw()   → convert one raw dict into our standard program format
-    Everything else (focus detection, event detection, scope extraction) is shared.
+    Everything else (focus detection, event detection) is shared.
     """
 
-    PLATFORM_KEY: str = "unknown"  # e.g. "bugcrowd", "yeswehack", "intigriti"
+    PLATFORM_KEY: str = "unknown"  # e.g. "intigriti", "hackerone"
 
     def __init__(self, config: dict[str, Any]):
-        self.enabled = config.get("enabled", False)
+        self.enabled = bool(config.get("enabled", False))
 
     @abstractmethod
     def get_programs(self) -> list[dict[str, Any]]:
@@ -133,279 +135,69 @@ class BasePlatformClient(ABC):
 
         return None
 
-# ─── Bugcrowd API Client ──────────────────────────────────────────────
-
-class BugcrowdClient(BasePlatformClient):
-    """Bugcrowd API — has the most useful /programs endpoint for discovery."""
-
-    PLATFORM_KEY = "bugcrowd"
-    BASE_URL = "https://api.bugcrowd.com"
-    PROGRAMS_ENDPOINT = "/programs"
-
-    def __init__(self, config: dict[str, Any]):
-        super().__init__(config)
-        self.token_key = config.get("token_key", "")
-        self.token_secret = config.get("token_secret", "")
-        self.session = requests.Session()
-        self._setup_auth()
-
-    def _setup_auth(self):
-        """Set up Bugcrowd token authentication."""
-        if not self.enabled or not self.token_key or not self.token_secret:
-            return
-        auth_token = f"{self.token_key}:{self.token_secret}"
-        self.session.headers.update({
-            "Authorization": f"Token {auth_token}",
-            "Accept": "application/vnd.bugcrowd+json",
-            "Content-Type": "application/json",
-        })
-
-    def get_programs(self) -> list[dict[str, Any]]:
-        """Fetch all programs from Bugcrowd API."""
-        if not self.enabled or not self.token_key or not self.token_secret:
-            logger.info("Bugcrowd: credentials not configured, skipping")
-            return []
-
-        try:
-            all_programs = []
-            page = 1
-            while True:
-                resp = self.session.get(
-                    f"{self.BASE_URL}{self.PROGRAMS_ENDPOINT}",
-                    params={"page[number]": page, "page[size]": 50},
-                    timeout=30,
-                )
-
-                if resp.status_code != 200:
-                    logger.warning("Bugcrowd API error: %s — %s", resp.status_code, resp.text[:200])
-                    break
-
-                data = resp.json()
-                programs = data.get("data", [])
-                if not programs:
-                    break
-
-                all_programs.extend(programs)
-
-                links = data.get("links", {})
-                next_page = links.get("next")
-                if not next_page:
-                    break
-                page += 1
-
-            logger.info("Bugcrowd: fetched %d programs", len(all_programs))
-            return all_programs
-
-        except requests.RequestException as e:
-            logger.error("Bugcrowd API request failed: %s", e)
-            return []
-        except Exception as e:
-            logger.error("Bugcrowd unexpected error: %s", e)
-            return []
-
-    def parse_raw(self, raw: dict[str, Any]) -> dict[str, Any] | None:
-        """Parse a Bugcrowd program into our standard format."""
-        attributes = raw.get("attributes", {})
-        relationships = raw.get("relationships", {})
-
-        scope_details = self._extract_scope(relationships)
-        return {
-            "name": attributes.get("name", "Unknown"),
-            "platform": self.PLATFORM_KEY,
-            "url": f"https://bugcrowd.com/{attributes.get('handle', 'unknown')}",
-            "max_payout_usd": self._extract_max_payout(attributes),
-            "description": attributes.get("description", "")[:500],
-            "scope_details": scope_details,
-            "status": attributes.get("status", "unknown"),
-        }
-
-    def _extract_scope(self, relationships: dict[str, Any]) -> dict[str, Any]:
-        """Extract detailed scope information from Bugcrowd relationships."""
-        scope_data = relationships.get("scope", {}).get("data", [])
-        assets = []
-        descriptions = []
-
-        for s in scope_data:
-            attrs = s.get("attributes", {})
-            if attrs.get("asset_type"):
-                assets.append(attrs["asset_type"])
-            desc = attrs.get("description", "")
-            if desc:
-                descriptions.append(desc)
-
-        return {
-            "assets": list(set(assets)),
-            "descriptions": descriptions,
-            "count": len(scope_data),
-        }
-
-    def _extract_max_payout(self, attrs: dict[str, Any]) -> int:
-        """Try to extract max payout from Bugcrowd program attributes."""
-        if "max_bounty_amount" in attrs:
-            try:
-                return int(attrs["max_bounty_amount"])
-            except (ValueError, TypeError):
-                pass
-
-        program_type = attrs.get("program_type", "").lower()
-        if "private" in program_type:
-            return 50000
-        elif "public" in program_type:
-            return 25000
-        else:
-            return 15000
-
-# ─── YesWeHack API Client ─────────────────────────────────────────────
-
-class YesWeHackClient(BasePlatformClient):
-    """YesWeHack API — requires CSM approval + OAuth setup."""
-
-    PLATFORM_KEY = "yeswehack"
-    BASE_URL = "https://apps.yeswehack.com"
-
-    def __init__(self, config: dict[str, Any]):
-        super().__init__(config)
-        self.client_id = config.get("client_id", "")
-        self.client_secret = config.get("client_secret", "")
-        self.redirect_uri = config.get("redirect_uri", "")
-
-    def get_programs(self) -> list[dict[str, Any]]:
-        """Fetch programs from YesWeHack API."""
-        if not self.enabled or not self.client_id or not self.client_secret:
-            logger.info("YesWeHack: credentials not configured, skipping")
-            return []
-
-        # Try Python SDK first
-        try:
-            from yeswehack import YesWeHackClient as YWH_SDK
-
-            client = YWH_SDK(
-                client_id=self.client_id,
-                client_secret=self.client_secret,
-                redirect_uri=self.redirect_uri or "http://localhost",
-            )
-            programs = client.get_programs()  # type: ignore[attr-defined]
-            logger.info("YesWeHack (SDK): fetched %d programs", len(programs))
-            return programs
-
-        except ImportError:
-            logger.info("YesWeHack SDK not installed. Install with: pip install yeswehack")
-        except Exception as e:
-            logger.warning("YesWeHack SDK error: %s", e)
-
-        # Fallback to direct API
-        return self._api_fallback()
-
-    def _api_fallback(self) -> list[dict[str, Any]]:
-        """Fallback to direct OAuth + API calls."""
-        try:
-            token_resp = requests.post(
-                f"{self.BASE_URL}/oauth/token",
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": self.client_id,
-                    "client_secret": self.client_secret,
-                    "redirect_uri": self.redirect_uri or "http://localhost",
-                },
-                timeout=30,
-            )
-
-            if token_resp.status_code != 200:
-                logger.warning("YesWeHack OAuth error: %s", token_resp.text[:200])
-                return []
-
-            access_token = token_resp.json().get("access_token")
-            if not access_token:
-                logger.error("No access token from YesWeHack OAuth")
-                return []
-
-            headers = {"Authorization": f"Bearer {access_token}"}
-            resp = requests.get(
-                f"{self.BASE_URL}/api/v1/programs",
-                headers=headers,
-                timeout=30,
-            )
-
-            if resp.status_code != 200:
-                logger.warning("YesWeHack programs API error: %s", resp.text[:200])
-                return []
-
-            data = resp.json()
-            raw_programs = data.get("programs", data) if isinstance(data, dict) else data
-            logger.info("YesWeHack (API): fetched %d programs", len(raw_programs))
-            return raw_programs
-
-        except requests.RequestException as e:
-            logger.error("YesWeHack API request failed: %s", e)
-            return []
-        except Exception as e:
-            logger.error("YesWeHack unexpected error: %s", e)
-            return []
-
-    def parse_raw(self, raw: dict[str, Any]) -> dict[str, Any] | None:
-        """Parse a YesWeHack program into our standard format."""
-        name = raw.get("name", "Unknown")
-        description = (raw.get("description", "") or "")[:500]
-
-        # Extract scope details
-        assets = []
-        descriptions = []
-        for key in ("scope", "targets", "assets", "in_scope"):
-            val = raw.get(key)
-            if isinstance(val, list):
-                assets.extend([str(a).lower() for a in val])
-            elif isinstance(val, dict):
-                descriptions.append(str(val))
-
-        return {
-            "name": name,
-            "platform": self.PLATFORM_KEY,
-            "url": f"https://app.yeswehack.com/{raw.get('slug', 'unknown')}",
-            "max_payout_usd": raw.get("max_bounty_amount", 15000),
-            "description": description,
-            "scope_details": {
-                "assets": list(set(assets)),
-                "descriptions": descriptions,
-                "count": len(assets) + len(descriptions),
-            },
-            "status": raw.get("state", "unknown"),
-        }
-
-# ─── Intigriti API Client ─────────────────────────────────────────────
+# ─── Intigriti Researcher API Client ──────────────────────────────────
 
 class IntigritiClient(BasePlatformClient):
-    """Intigriti API — primarily org-facing but has some researcher endpoints."""
+    """Intigriti Researcher API — /external/researcher/v1/programs (Bearer token)."""
 
     PLATFORM_KEY = "intigriti"
-    BASE_URL = "https://api.intigriti.com"
+    BASE_URL = "https://api.intigriti.com/external/researcher"
+    PROGRAMS_ENDPOINT = "/v1/programs"
 
     def __init__(self, config: dict[str, Any]):
         super().__init__(config)
         self.token = config.get("token", "")
+        self.session = requests.Session()
+        self._setup_auth()
+
+    def _setup_auth(self):
+        """Set up Intigriti Bearer token authentication."""
+        if not self.enabled or not self.token:
+            return
+        self.session.headers.update({
+            "Authorization": f"Bearer {self.token}",
+            "Accept": "application/json",
+        })
 
     def get_programs(self) -> list[dict[str, Any]]:
-        """Fetch programs from Intigriti API."""
+        """Fetch all programs from Intigriti Researcher API (paginated)."""
         if not self.enabled or not self.token:
             logger.info("Intigriti: credentials not configured, skipping")
             return []
 
         try:
-            headers = {"Authorization": f"Bearer {self.token}"}
+            # Fetch in batches to handle large result sets
+            all_records = []
+            offset = 0
+            page_size = 100
 
-            resp = requests.get(
-                f"{self.BASE_URL}/programs",
-                headers=headers,
-                timeout=30,
-            )
+            while True:
+                resp = self.session.get(
+                    f"{self.BASE_URL}{self.PROGRAMS_ENDPOINT}",
+                    params={"limit": page_size, "offset": offset},
+                    timeout=30,
+                )
 
-            if resp.status_code != 200:
-                logger.warning("Intigriti API error: %s — %s", resp.status_code, resp.text[:200])
-                return []
+                if resp.status_code != 200:
+                    logger.warning("Intigriti API error: %s — %s", resp.status_code, resp.text[:200])
+                    break
 
-            data = resp.json()
-            raw_programs = data.get("programs", data) if isinstance(data, dict) else data
-            logger.info("Intigriti: fetched %d programs", len(raw_programs))
-            return raw_programs
+                data = resp.json()
+                records = data.get("records", [])
+                max_count = data.get("maxCount", len(all_records) + len(records))
+
+                if not records:
+                    break
+
+                all_records.extend(records)
+                offset += page_size
+
+                # Stop if we've fetched everything
+                if len(all_records) >= max_count:
+                    break
+
+            logger.info("Intigriti: fetched %d programs (total available: %d)", len(all_records), max_count)
+            return all_records
 
         except requests.RequestException as e:
             logger.error("Intigriti API request failed: %s", e)
@@ -417,30 +209,168 @@ class IntigritiClient(BasePlatformClient):
     def parse_raw(self, raw: dict[str, Any]) -> dict[str, Any] | None:
         """Parse an Intigriti program into our standard format."""
         name = raw.get("name", "Unknown")
-        description = (raw.get("description", "") or "")[:500]
+        handle = raw.get("handle", "unknown")
 
-        # Extract scope details
-        assets = []
-        descriptions = []
-        for key in ("scope", "targets", "assets", "in_scope"):
-            val = raw.get(key)
-            if isinstance(val, list):
-                assets.extend([str(a).lower() for a in val])
-            elif isinstance(val, dict):
-                descriptions.append(str(val))
+        # Extract bounty info
+        max_bounty_obj = raw.get("maxBounty", {})
+        min_bounty_obj = raw.get("minBounty", {})
+        max_payout = int(max_bounty_obj.get("value", 0)) if isinstance(max_bounty_obj, dict) else 0
+
+        # Extract status and type
+        status_obj = raw.get("status", {})
+        status_value = status_obj.get("value", "Unknown") if isinstance(status_obj, dict) else str(raw.get("status", ""))
+
+        type_obj = raw.get("type", {})
+        program_type = type_obj.get("value", "") if isinstance(type_obj, dict) else str(raw.get("type", ""))
+
+        confidentiality_obj = raw.get("confidentialityLevel", {})
+        confidentiality = confidentiality_obj.get("value", "Unknown") if isinstance(confidentiality_obj, dict) else str(raw.get("confidentialityLevel", ""))
+
+        industry = raw.get("industry", "")
+
+        # Build description from available fields
+        description_parts = []
+        if program_type:
+            description_parts.append(f"Type: {program_type}")
+        if confidentiality:
+            description_parts.append(f"Visibility: {confidentiality}")
+        if status_value:
+            description_parts.append(f"Status: {status_value}")
+        if industry:
+            description_parts.append(f"Industry: {industry}")
 
         return {
             "name": name,
             "platform": self.PLATFORM_KEY,
-            "url": f"https://app.intigriti.com/{raw.get('slug', 'unknown')}",
-            "max_payout_usd": raw.get("max_bounty_amount", 20000),
-            "description": description,
+            "url": f"https://app.intigriti.com/programs/{handle}/{handle}/detail",
+            "max_payout_usd": max_payout,
+            "description": " | ".join(description_parts),
             "scope_details": {
-                "assets": list(set(assets)),
-                "descriptions": descriptions,
-                "count": len(assets) + len(descriptions),
+                "assets": [],
+                "descriptions": description_parts,
+                "count": len(description_parts),
             },
-            "status": raw.get("state", "unknown"),
+            "status": status_value.lower() if isinstance(status_value, str) else "unknown",
+        }
+
+# ─── HackerOne Researcher API Client ──────────────────────────────────
+
+class HackerOneClient(BasePlatformClient):
+    """HackerOne Researcher API — /v1/programs (Basic auth: username + API token)."""
+
+    PLATFORM_KEY = "hackerone"
+    BASE_URL = "https://api.hackerone.com/v1"
+    PROGRAMS_ENDPOINT = "/hackers/programs"
+
+    def __init__(self, config: dict[str, Any]):
+        super().__init__(config)
+        self.username = config.get("username", "")
+        self.token = config.get("token", "")
+        self.session = requests.Session()
+        self._setup_auth()
+
+    def _setup_auth(self):
+        """Set up HackerOne Basic authentication (username:API_token)."""
+        if not self.enabled or not self.username or not self.token:
+            return
+        # HackerOne uses Basic auth where username is your API username and password is the token
+        import base64
+        creds = f"{self.username}:{self.token}"
+        encoded = base64.b64encode(creds.encode()).decode()
+        self.session.headers.update({
+            "Authorization": f"Basic {encoded}",
+            "Accept": "application/json",
+        })
+
+    def get_programs(self) -> list[dict[str, Any]]:
+        """Fetch all programs from HackerOne Researcher API (paginated)."""
+        if not self.enabled or not self.username or not self.token:
+            logger.info("HackerOne: credentials not configured (need username + token), skipping")
+            return []
+
+        try:
+            all_programs = []
+            page_size = 50
+            page_number = 1
+
+            while True:
+                resp = self.session.get(
+                    f"{self.BASE_URL}{self.PROGRAMS_ENDPOINT}",
+                    params={"page[size]": page_size, "page[number]": page_number},
+                    timeout=30,
+                )
+
+                if resp.status_code != 200:
+                    logger.warning("HackerOne API error: %s — %s", resp.status_code, resp.text[:200])
+                    break
+
+                data = resp.json()
+                programs = data.get("data", []) if isinstance(data, dict) else data
+
+                if not programs:
+                    break
+
+                all_programs.extend(programs)
+
+                # Check for next page link
+                links = data.get("links", {})
+                if not links.get("next"):
+                    break
+                page_number += 1
+
+            logger.info("HackerOne: fetched %d programs", len(all_programs))
+            return all_programs
+
+        except requests.RequestException as e:
+            logger.error("HackerOne API request failed: %s", e)
+            return []
+        except Exception as e:
+            logger.error("HackerOne unexpected error: %s", e)
+            return []
+
+    def parse_raw(self, raw: dict[str, Any]) -> dict[str, Any] | None:
+        """Parse a HackerOne program into our standard format."""
+        # JSON:API format — attributes are nested under "attributes"
+        attrs = raw.get("attributes", {}) if isinstance(raw, dict) else {}
+
+        name = attrs.get("name", attrs.get("title", "Unknown"))
+        description = (attrs.get("description", "") or "")[:500]
+
+        # Extract scope details from relationships or attributes
+        relationships = raw.get("relationships", {}) if isinstance(raw, dict) else {}
+        scope_data = []
+        for rel_key in ("scope", "programs", "targets"):
+            rel_val = relationships.get(rel_key, {}).get("data", [])
+            if isinstance(rel_val, list):
+                scope_data.extend(rel_val)
+
+        # Extract max payout from attributes
+        max_payout = 0
+        for key in ("max_bounty_amount", "bounty_range_max", "max_reward"):
+            val = attrs.get(key)
+            if val is not None:
+                try:
+                    max_payout = int(val)
+                    break
+                except (ValueError, TypeError):
+                    pass
+
+        # Extract status and program type
+        status = attrs.get("status", "unknown")
+        program_type = attrs.get("program_type", "")
+
+        return {
+            "name": name,
+            "platform": self.PLATFORM_KEY,
+            "url": f"https://hackerone.com/{attrs.get('handle', 'unknown')}",
+            "max_payout_usd": max_payout,
+            "description": description or "",
+            "scope_details": {
+                "assets": [],
+                "descriptions": [f"Type: {program_type}"] if program_type else [],
+                "count": len(scope_data),
+            },
+            "status": status.lower() if isinstance(status, str) else "unknown",
         }
 
 # ─── Unified Platform Client ──────────────────────────────────────────
@@ -449,9 +379,9 @@ class PlatformClient:
     """Unified client that queries all configured platforms and merges results."""
 
     def __init__(self, config: dict[str, Any]):
-        self.bugcrowd = BugcrowdClient(config.get("platforms", {}).get("bugcrowd", {}))
-        self.yeswehack = YesWeHackClient(config.get("platforms", {}).get("yeswehack", {}))
-        self.intigriti = IntigritiClient(config.get("platforms", {}).get("intigriti", {}))
+        platforms = config.get("platforms", {})
+        self.intigriti = IntigritiClient(platforms.get("intigriti", {}))
+        self.hackerone = HackerOneClient(platforms.get("hackerone", {}))
 
     def discover_programs(
         self,
@@ -461,22 +391,16 @@ class PlatformClient:
         """Discover programs from all configured APIs with full details."""
         all_programs: list[dict[str, Any]] = []
 
-        # Bugcrowd — most useful for discovery
-        if not platform_filter or "bugcrowd" in platform_filter:
-            raw = self.bugcrowd.get_programs()
-            parsed = [p for p in (self.bugcrowd.parse_program(r) for r in raw) if p]
-            all_programs.extend(parsed)
-
-        # YesWeHack — requires CSM approval
-        if not platform_filter or "yeswehack" in platform_filter:
-            raw = self.yeswehack.get_programs()
-            parsed = [p for p in (self.yeswehack.parse_program(r) for r in raw) if p]
-            all_programs.extend(parsed)
-
-        # Intigriti — org-facing but may have researcher endpoints
+        # Intigriti — researcher API confirmed working
         if not platform_filter or "intigriti" in platform_filter:
             raw = self.intigriti.get_programs()
             parsed = [p for p in (self.intigriti.parse_program(r) for r in raw) if p]
+            all_programs.extend(parsed)
+
+        # HackerOne — researcher API with Basic auth
+        if not platform_filter or "hackerone" in platform_filter:
+            raw = self.hackerone.get_programs()
+            parsed = [p for p in (self.hackerone.parse_program(r) for r in raw) if p]
             all_programs.extend(parsed)
 
         # Apply focus filter

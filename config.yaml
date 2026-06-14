@@ -10,35 +10,38 @@ scan:
 # ─── Platform API Credentials ────────────────────────────────────────
 # Fill in your credentials below and set enabled: true for each platform.
 # The tool works without any of these — it falls back to web search.
-# See API_INTEGRATION.md for setup details per platform.
 
 platforms:
 
-  # Bugcrowd — most useful for program discovery (has /programs endpoint)
-  bugcrowd:
-    enabled: false
-    api_url: "https://api.bugcrowd.com"
-    token_key: ""       # Your API key
-    token_secret: ""    # Your API secret
-
-  # YesWeHack — requires CSM approval first, then OAuth setup
-  yeswehack:
-    enabled: false
-    api_url: "https://apps.yeswehack.com"
-    client_id: ""
-    client_secret: ""
-    redirect_uri: "http://localhost"
-
-  # Intigriti — primarily org-facing but may have researcher endpoints
+  # Intigriti Researcher API (Bearer token)
+  # Get a token at: https://app.intigriti.com/auth/dashboard?redirect=/settings/api-tokens
   intigriti:
-    enabled: false
-    api_url: "https://api.intigriti.com"
-    token: ""
+    enabled: true
+    api_url: "https://api.intigriti.com/external/researcher"
+    token: "CFAB87A1120984CA99B472824F4B4B1C0403484E101D810B918D17762147E96D-1"
 
-  # HackerOne — no public program listing endpoint (org-facing API only)
-  # Not implemented in the API client; use web search for H1 discovery
+  # HackerOne Researcher API (Basic auth: username + API token)
+  # Get a token at: https://hackerone.com/settings/api-tokens
   hackerone:
-    enabled: false
+    enabled: true
     api_url: "https://api.hackerone.com/v1/"
-    username: ""
-    password: ""
+    username: "vl4dt"       # Your HackerOne API username (not your display name)
+    token: "p5heGEsATpJLZwt84cyWGV7g4F3X5wkCWfGjsrzXijg="
+
+  # ─── Platforms without researcher-facing program listing APIs ──────
+  # These are kept as comments for reference. They only have org-facing APIs
+  # (for companies hiring hackers), so they're not useful for discovery.
+
+  # Bugcrowd — no public /programs endpoint for researchers
+  # bugcrowd:
+  #   enabled: false
+  #   api_url: "https://api.bugcrowd.com"
+  #   token_key: ""
+  #   token_secret: ""
+
+  # YesWeHack — requires CSM approval, only org-facing API exists
+  # yeswehack:
+  #   enabled: false
+  #   api_url: "https://apps.yeswehack.com"
+  #   client_id: ""
+  #   client_secret: ""

@@ -4,100 +4,164 @@
 
 {% block content %}
 <div class="page-header">
-    <h2 class="page-title">Strategy</h2>
-    <span class="text-sm text-muted">Where to focus your efforts</span>
+    <h2 class="page-title">Hunting Strategy</h2>
+    <span class="text-sm text-muted">{{ now.strftime("%Y-%m-%d") }}</span>
 </div>
 
-<!-- ─── Hot Programs ───────────────────────────────────────────── -->
-{% if hot_programs %}
-<div class="card mb-2">
-    <div class="card-header" style="background:rgba(248,81,73,.06); border-bottom-color:rgba(248,81,73,.2);">
-        🔥 Hot Programs — Temporal Signals Active
-    </div>
+<!-- ─── Where to Hunt First ────────────────────────────────────── -->
+<div class="card" style="border-left:4px solid var(--accent-green);">
+    <div class="card-header">🎯 Where to Hunt First — Top Opportunities</div>
     <div class="card-body">
-        {% for p in hot_programs %}
-            <div class="program-row">
-                <span class="program-rank">#{{ loop.index }}</span>
-                <div class="program-info">
-                    <div class="program-name"><a href="{{ p.url }}" target="_blank">{{ p.name }}</a></div>
-                    <div class="program-meta">
-                        {% for f in p.get('focus_areas', []) %}
-                            {% if f in FOCUS_AREAS %}
-                                <span class="badge badge-cyan">{{ FOCUS_AREAS[f].icon }} {{ FOCUS_AREAS[f].name }}</span>
-                            {% endif %}
-                        {% endfor %}
-                        <span class="text-muted">&middot;</span>
-                        <span>${{ p.get('max_payout_usd', 0)|int|format_number }}</span>
+        {% set top5 = by_platform.get('intigriti', [])[:5] %}
+        {% if top5 %}
+            <p style="margin-bottom:.75rem; color:var(--text-muted); font-size:.9rem;">
+                Intigriti has the lowest competition and fastest triage. These are your best bets right now:
+            </p>
+            {% for p in top5 %}
+                <a href="/program/{{ p.id }}" style="text-decoration:none; color:inherit;">
+                    <div class="program-row" style="cursor:pointer;">
+                        <span class="program-rank">#{{ loop.index }}</span>
+                        <div class="program-info">
+                            <div class="program-name">{{ p.name }}</div>
+                            <div class="program-meta">
+                                <span>${{ p.get('max_payout_usd', 0)|int|format_number }} max</span>
+                                {% if p.status == 'open' %}
+                                    <span class="badge badge-green" style="font-size:.7rem;">Open</span>
+                                {% else %}
+                                    <span class="badge badge-orange" style="font-size:.7rem;">{{ p.status|title }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="program-score" style="color:{% if p.score >= 20 %}var(--accent-green){% elif p.score >= 12 %}var(--accent-blue){% else %}var(--text-muted){% endif %};">
+                            {{ '%+.1f'|format(p.get('score', 0)) }}
+                        </div>
                     </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p>No Intigriti programs available.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ─── Platform Comparison ────────────────────────────────────── -->
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+    <div class="card">
+        <div class="card-header">🏴 HackerOne — High Competition</div>
+        <div class="card-body" style="font-size:.9rem;">
+            {% set ho = by_platform.get('hackerone', []) %}
+            <p><strong>{{ ho|length }}</strong> programs tracked</p>
+            <ul style="list-style:none; padding:0;">
+                <li>⚠️ Extreme competition — many hunters targeting same programs</li>
+                <li>🐌 5-day average triage turnaround</li>
+                <li>💡 Best for well-known targets with large scope</li>
+            </ul>
+            {% if ho %}
+                <p style="margin-top:.5rem;"><strong>Top picks:</strong></p>
+                {% for p in ho[:3] %}
+                    <a href="/program/{{ p.id }}" style="text-decoration:none; color:var(--accent-blue); font-size:.85rem;">
+                        • {{ p.name }} ({{ '%+.1f'|format(p.get('score', 0)) }}) — ${{ p.get('max_payout_usd', 0)|int|format_number }}
+                    </a>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">🎯 Intigriti — Low Competition</div>
+        <div class="card-body" style="font-size:.9rem;">
+            {% set ig = by_platform.get('intigriti', []) %}
+            <p><strong>{{ ig|length }}</strong> programs tracked</p>
+            <ul style="list-style:none; padding:0;">
+                <li>✅ Low competition — fewer hunters per program</li>
+                <li>⚡ 1-day average triage turnaround</li>
+                <li>💡 Best for finding overlooked targets</li>
+            </ul>
+            {% if ig %}
+                <p style="margin-top:.5rem;"><strong>Top picks:</strong></p>
+                {% for p in ig[:3] %}
+                    <a href="/program/{{ p.id }}" style="text-decoration:none; color:var(--accent-blue); font-size:.85rem;">
+                        • {{ p.name }} ({{ '%+.1f'|format(p.get('score', 0)) }}) — ${{ p.get('max_payout_usd', 0)|int|format_number }}
+                    </a>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ─── Hot Programs (Temporal Signals) ───────────────────────── -->
+{% if hot_programs %}
+<div class="card mt-2">
+    <div class="card-header">🔥 Hot Programs — Temporal Opportunities</div>
+    <div class="card-body" style="font-size:.9rem;">
+        {% for p in hot_programs %}
+            <a href="/program/{{ p.id }}" style="text-decoration:none; color:inherit;">
+                <div class="change-item" style="cursor:pointer;">
+                    <span class="change-icon">
+                        {% if p.is_new_program %}🆕{% elif p.scope_recently_expanded %}📈{% elif p.bounty_increased %}💰{% else %}🔥{% endif %}
+                    </span>
+                    <div class="change-details">
+                        <div class="change-program" style="font-weight:600;">{{ p.name }}</div>
+                        <div class="text-sm text-muted">
+                            {% if p.is_new_program %}New program — least competition{% endif %}
+                            {% if p.scope_recently_expanded %}{% if p.is_new_program %}, {% endif %}Scope expanded — new attack surface{% endif %}
+                            {% if p.bounty_increased %}{% if p.is_new_program or p.scope_recently_expanded %}, {% endif %}Bounty increased{% endif %}
+                            {% if p.has_active_event %}{% if p.is_new_program or p.scope_recently_expanded or p.bounty_increased %}, {% endif %}Active event{% endif %}
+                        </div>
+                    </div>
+                    <span style="font-weight:700; color:{% if p.score >= 20 %}var(--accent-green){% else %}var(--accent-blue){% endif %};">
+                        {{ '%+.1f'|format(p.get('score', 0)) }}
+                    </span>
                 </div>
-                <div style="display:flex; gap:.3rem;">
-                    {% if p.is_new_program %}<span class="signal signal-new">🆕 NEW</span>{% endif %}
-                    {% if p.scope_recently_expanded %}<span class="signal signal-scope">📈 SCOPE+</span>{% endif %}
-                    {% if p.bounty_increased %}<span class="signal signal-bounty">💰 UP</span>{% endif %}
-                    {% if p.has_active_event %}<span class="signal signal-event">🔥 EVENT</span>{% endif %}
-                </div>
-            </div>
+            </a>
         {% endfor %}
     </div>
 </div>
 {% endif %}
 
-<!-- ─── By Platform ────────────────────────────────────────────── -->
-<div class="strategy-grid">
-    {% for plat_key, progs in by_platform.items() %}
-        {% set plat = PLATFORMS.get(plat_key, {'name': plat_key}) %}
-        <div class="strategy-card">
-            <h3>
-                <span class="badge badge-blue">{{ plat.name }}</span>
-                <span class="text-muted text-sm" style="margin-left:.5rem;">{{ progs|length }} program{{ 's' if progs != 1 else '' }}</span>
-            </h3>
-            <ul class="strategy-list">
-                {% for p in progs[:8] %}
-                    <li>
-                        <a href="{{ p.url }}" target="_blank">{{ p.name }}</a>
-                        <span class="text-muted text-sm" style="margin-left:auto;">${{ p.get('max_payout_usd', 0)|int|format_number }}</span>
-                    </li>
-                {% endfor %}
-                {% if progs|length > 8 %}
-                    <li class="text-muted">... and {{ progs|length - 8 }} more</li>
-                {% endif %}
-            </ul>
-        </div>
-    {% endfor %}
-</div>
-
-<!-- ─── By Focus Area ──────────────────────────────────────────── -->
-<div class="strategy-grid mt-2">
-    {% for focus_key, progs in by_focus.items() %}
-        {% if focus_key in FOCUS_AREAS %}
-            <div class="strategy-card">
-                <h3>
-                    {{ FOCUS_AREAS[focus_key].icon }} {{ FOCUS_AREAS[focus_key].name }}
-                    <span class="text-muted text-sm" style="margin-left:.5rem;">{{ progs|length }}</span>
-                </h3>
-                <ul class="strategy-list">
-                    {% for p in progs[:6] %}
-                        <li>
-                            <a href="{{ p.url }}" target="_blank">{{ p.name }}</a>
-                            <span class="text-muted text-sm" style="margin-left:auto;">${{ p.get('max_payout_usd', 0)|int|format_number }}</span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-    {% endfor %}
-</div>
-
-<!-- ─── Empty State ────────────────────────────────────────────── -->
-{% if not hot_programs and not by_platform and not by_focus %}
+<!-- ─── Payout Tiers ───────────────────────────────────────────── -->
 <div class="card mt-2">
-    <div class="card-body">
-        <div class="empty-state">
-            <div class="icon">💡</div>
-            <p>No data to analyze yet.<br>Run a scan first, then come back for strategy recommendations.</p>
+    <div class="card-header">💰 Programs by Payout Tier</div>
+    <div class="card-body" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+        <div style="padding:.75rem; border-radius:8px; background:var(--bg-card); border-left:3px solid var(--accent-green);">
+            <div style="font-weight:600; margin-bottom:.5rem;">🏆 $50K+ Whale Programs</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent-green);">{{ whale_count }}</div>
+            <div class="text-sm text-muted">programs</div>
+        </div>
+        <div style="padding:.75rem; border-radius:8px; background:var(--bg-card); border-left:3px solid var(--accent-blue);">
+            <div style="font-weight:600; margin-bottom:.5rem;">💎 $20K+ High Value</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent-blue);">{{ high_value_count }}</div>
+            <div class="text-sm text-muted">programs</div>
+        </div>
+        <div style="padding:.75rem; border-radius:8px; background:var(--bg-card); border-left:3px solid var(--accent-orange);">
+            <div style="font-weight:600; margin-bottom:.5rem;">💵 $10K+ Mid Tier</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent-orange);">{{ mid_tier_count }}</div>
+            <div class="text-sm text-muted">programs</div>
         </div>
     </div>
 </div>
-{% endif %}
+
+<!-- ─── How Scoring Works ──────────────────────────────────────── -->
+<div class="card mt-2">
+    <div class="card-header">📊 How Opportunity Scores Work</div>
+    <div class="card-body" style="font-size:.9rem;">
+        <p>The score helps you prioritize which programs to hunt. Higher = better opportunity.</p>
+        <table style="width:100%; border-collapse:collapse; margin-top:.5rem;">
+            <thead>
+                <tr style="border-bottom:1px solid var(--border-color);">
+                    <th style="padding:.4rem .75rem; text-align:left; color:var(--text-muted); font-size:.8rem;">Factor</th>
+                    <th style="padding:.4rem .75rem; text-align:left; color:var(--text-muted); font-size:.8rem;">Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding:.3rem 0;">Competition level (platform)</td><td>Lower competition = higher score (up to +10)</td></tr>
+                <tr><td style="padding:.3rem 0;">Triage speed</td><td>Faster triage = higher score (up to +10)</td></tr>
+                <tr><td style="padding:.3rem 0;">Focus area match</td><td>LLM/AI (+8), Mobile (+5), API (+3)</td></tr>
+                <tr><td style="padding:.3rem 0;">Max payout</td><td>Higher payout = higher score (up to +5)</td></tr>
+                <tr><td style="padding:.3rem 0;">Temporal signals</td><td>New program (+15), Scope expanded (+10), Event (+12)</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}

@@ -4,63 +4,58 @@
 
 {% block content %}
 <div class="page-header">
-    <h2 class="page-title">Change Detection</h2>
+    <h2 class="page-title">Change Detection Log</h2>
     <span class="text-sm text-muted">{{ total }} change{{ 's' if total != 1 else '' }} in last {{ days }}d</span>
 </div>
 
-<!-- ─── Time Range Filter ──────────────────────────────────────── -->
-<div class="filters-bar">
-    <span class="filter-label">Last:</span>
-    {% for d in [7, 14, 30] %}
-        <a href="/changes?days={{ d }}" class="filter-chip {% if days == d %}active{% endif %}">{{ d }}d</a>
-    {% endfor %}
-</div>
-
-<!-- ─── Changes List ───────────────────────────────────────────── -->
+<!-- ─── Changes Table ──────────────────────────────────────────── -->
 <div class="card">
-    <div class="card-header">🔄 Detected Changes</div>
-    <div class="card-body">
-        {% if changes %}
-            <!-- Group by change type -->
-            {% set ns = namespace(groups={}) %}
-            {% for c in changes %}
-                {% set ct = c.change_type %}
-                {% if ct not in ns.groups %}{% set _ = ns.groups.update({ct: []}) %}{% endif %}
-                {% set _ = ns.groups[ct].append(c) %}
-            {% endfor %}
-
-            {% for change_type, items in ns.groups.items() %}
-                <div class="mb-2">
-                    <h3 style="font-size:.9rem; margin-bottom:.5rem;">
-                        {% if 'new' in change_type %}🆕{% elif 'scope' in change_type %}📈{% elif 'bounty' in change_type %}💰{% elif 'event' in change_type %}🔥{% else %}⚡{% endif %}
-                        {{ change_type|replace('_', ' ')|title }} <span class="text-muted text-sm">({{ items|length }})</span>
-                    </h3>
-
-                    {% for c in items %}
-                        <div class="change-item">
-                            <div class="change-details" style="flex:1;">
-                                <div class="change-type">{{ c.program_name }}</div>
-                                {% if c.old_value and c.new_value %}
-                                    <div class="text-sm text-muted">
-                                        {{ (c.old_value[:40] + '...') if c.old_value|length > 40 else c.old_value }}
-                                        →
-                                        {{ (c.new_value[:40] + '...') if c.new_value|length > 40 else c.new_value }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <span class="change-time">{{ c.detected_at[:16] }}</span>
-                        </div>
+    {% if changes %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:50px;">Type</th>
+                        <th>Program</th>
+                        <th>Details</th>
+                        <th style="width:160px; text-align:right;">Detected</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in changes %}
+                    <tr onclick="window.location='/program/{{ c.program_id }}'" style="cursor:pointer;" title="Click to see program details">
+                        <td>
+                            {% if 'new' in c.change_type %}🆕{% elif 'scope' in c.change_type %}📈{% elif 'bounty' in c.change_type %}💰{% elif 'event' in c.change_type %}🔥{% else %}⚡{% endif %}
+                        </td>
+                        <td style="font-weight:600; color:var(--accent-blue);">
+                            {% if c.program_name is defined and c.program_name != 'Unknown' %}
+                                {{ c.program_name }}
+                            {% else %}
+                                Program #{{ c.program_id }}
+                            {% endif %}
+                        </td>
+                        <td class="text-sm text-muted">
+                            {{ c.change_type|replace('_', ' ')|title }}
+                            {% if c.old_value and c.new_value %}
+                                <span style="display:block; font-size:.8rem;">{{ c.old_value[:60] }} → {{ c.new_value[:60] }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right; white-space:nowrap;" class="text-muted">
+                            {{ c.detected_at[:16] }}
+                        </td>
+                    </tr>
                     {% endfor %}
-                </div>
-            {% endfor %}
-
-        {% else %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body">
             <div class="empty-state">
-                <div class="icon">✅</div>
+                <div class="icon">🔄</div>
                 <p>No changes detected in the last {{ days }} days.</p>
             </div>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
 </div>
 
 {% endblock %}

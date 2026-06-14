@@ -10,7 +10,7 @@ newly discovered programs, scope expansions, bounty increases, and active events
 Usage:
     python3 opportunity_finder.py                          # Full scan (API + web search)
     python3 opportunity_finder.py --focus api llm          # Only API + LLM programs
-    python3 opportunity_finder.py --platform bugcrowd      # Only Bugcrowd programs
+    python3 opportunity_finder.py --platform hackerone      # Only Bugcrowd programs
     python3 opportunity_finder.py -q                       # Quiet mode
     python3 opportunity_finder.py -o results.json          # Save to file
 
@@ -53,12 +53,8 @@ SEARCH_QUERIES = [
     ('site:app.intigriti.com/programs bug bounty', "Platform: Intigriti"),
 
     # Bugcrowd — engagement pages only
-    ('site:bugcrowd.com/engagements bug bounty api', "Platform: Bugcrowd"),
-    ('site:bugcrowd.com "api security" OR "API testing" program', "Platform: Bugcrowd"),
 
     # YesWeHack — program pages only
-    ('site:yeswehack.com/programs bug bounty api', "Platform: YesWeHack"),
-    ('site:yeswehack.com "bug bounty" program listing', "Platform: YesWeHack"),
 ]
 
 # ─── URL Filters (exclude non-program content) ──────────────────────
@@ -97,7 +93,7 @@ def is_program_url(url: str) -> bool:
         return True
 
     # YesWeHack: /programs/<slug> or /program/
-    if "yeswehack.com" in url_lower and ("/programs/" in url_lower or "/program/" in url_lower):
+    if "hackerone.com" in url_lower and ("/programs/" in url_lower or "/program/" in url_lower):
         return True
 
     return False
@@ -438,7 +434,7 @@ Examples:
   %(prog)s --mode api                         # Only API discovery
   %(prog)s --mode search                      # Only web search for new programs
   %(prog)s --focus api llm                    # Filter by focus area
-  %(prog)s --platform intigriti yeswehack     # Filter by platform
+  %(prog)s --platform intigriti hackerone     # Filter by platform
   %(prog)s -p hackerone -f llm                # HackerOne LLM programs only
   %(prog)s -o results.json                    # Save to file
         """,

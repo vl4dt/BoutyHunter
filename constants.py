@@ -75,12 +75,14 @@ PLATFORMS = {
         "site": "bugcrowd.com",
         "competition_level": "moderate",
         "triage_speed_days": 3,
+        "has_researcher_api": False,  # Only org-facing API
     },
     "yeswehack": {
         "name": "YesWeHack",
         "site": "yeswehack.com",
         "competition_level": "low",
         "triage_speed_days": 3,
+        "has_researcher_api": False,  # Requires CSM approval, org-facing only
     },
 }
 

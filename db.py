@@ -29,7 +29,7 @@ SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS programs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    platform TEXT NOT NULL CHECK(platform IN ('hackerone','intigriti','bugcrowd','yeswehack')),
+    platform TEXT NOT NULL CHECK(platform IN ('hackerone','intigriti')),
     url TEXT UNIQUE NOT NULL,
     focus_areas TEXT DEFAULT '[]',          -- JSON array: ["api","llm"]
     max_payout_usd INTEGER DEFAULT 0,

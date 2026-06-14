@@ -36,7 +36,7 @@
 <div class="card mt-2">
     <div class="card-header">🔑 API Credentials Status</div>
     <div class="card-body" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
-        {% for plat_key in ["bugcrowd", "yeswehack", "intigriti"] %}
+        {% for plat_key in ["hackerone", "intigriti"] %}
             {% set ps = platform_status.get(plat_key, {}) %}
             <div style="padding:.75rem; border-radius:8px; background:var(--bg-card); border:1px solid var(--border-color);">
                 <div style="font-weight:600; margin-bottom:.25rem;">{{ plat_key|title }}</div>
@@ -55,64 +55,68 @@
 <!-- ─── Two Column Layout ──────────────────────────────────────── -->
 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
 
-    <!-- Left: Top Programs -->
+    <!-- Left: Top Programs with Score Breakdowns -->
     <div class="card">
-        <div class="card-header">🏆 Top Programs by Score</div>
-        <div class="card-body">
+        <div class="card-header">🏆 Top Programs by Opportunity Score</div>
+        <div class="card-body" style="padding:.5rem;">
             {% if top_programs %}
                 {% for p in top_programs %}
-                    <div class="program-row">
-                        <span class="program-rank">#{{ loop.index }}</span>
-                        <div class="program-info">
-                            <div class="program-name">{{ p.name }}</div>
-                            <div class="program-meta">
-                                {% for f in p.get('focus_areas', []) %}
-                                    {% if f in FOCUS_AREAS %}
-                                        <span class="badge badge-blue">{{ FOCUS_AREAS[f].icon }} {{ FOCUS_AREAS[f].name }}</span>
-                                    {% endif %}
-                                {% endfor %}
-                                <span class="text-muted">&middot;</span>
-                                <span>${{ p.get('max_payout_usd', 0)|int|format_number }}</span>
+                    <a href="/program/{{ p.id }}" style="text-decoration:none; color:inherit;" title="Click to see full breakdown">
+                        <div class="program-row" style="cursor:pointer;">
+                            <span class="program-rank">#{{ loop.index }}</span>
+                            <div class="program-info">
+                                <div class="program-name">{{ p.name }}</div>
+                                <div class="program-meta">
+                                    {% set plat = PLATFORMS.get(p.platform, {}) %}
+                                    <span class="badge badge-blue" style="font-size:.7rem;">{{ plat.name or p.platform }}</span>
+                                    <span class="text-muted">&middot;</span>
+                                    <span>${{ p.get('max_payout_usd', 0)|int|format_number }}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:.25rem;">
+                                <div class="program-score" style="font-size:1.25rem; font-weight:700; color:{% if p.score >= 20 %}var(--accent-green){% elif p.score >= 12 %}var(--accent-blue){% else %}var(--text-muted){% endif %};">
+                                    {{ '%+.1f'|format(p.get('score', 0)) }}
+                                </div>
                             </div>
                         </div>
-                        <div class="program-score" style="color: {% if p.score >= 15 %}var(--accent-green){% elif p.score >= 8 %}var(--accent-blue){% else %}var(--text-muted){% endif %};">
-                            {{ '%+.1f'|format(p.get('score', 0)) }}
-                        </div>
+                    </a>
+                    <!-- Inline score breakdown -->
+                    {% if p.score_breakdown %}
+                    <div style="padding:.25rem 1.5rem .75rem; font-size:12px; color:var(--text-muted); border-bottom:1px solid var(--border-color);">
+                        {% for reason in p.score_breakdown %}
+                            <span style="display:inline-block; margin:.15rem .35rem .15rem 0; padding:.1rem .4rem; background:var(--card-bg); border-radius:4px;">{{ reason }}</span>
+                        {% endfor %}
                     </div>
+                    {% endif %}
                 {% endfor %}
             {% else %}
                 <div class="empty-state" style="padding:2rem; text-align:center;">
                     <div style="font-size:3rem; margin-bottom:.5rem;">🔍</div>
-                    <p style="margin-bottom:1rem;">No programs discovered yet.</p>
-
-                    {% if not platform_status %}
-                        <p class="text-muted" style="margin-bottom:1rem;">API credentials are not configured. Edit <code>config.yaml</code> to enable API discovery, or run a web search:</p>
-                        <pre style="background:var(--bg-card); padding:.75rem; border-radius:6px; text-align:left; font-size:.85rem;"><code>python3 opportunity_finder.py --mode search</code></pre>
-                    {% else %}
-                        <p class="text-muted" style="margin-bottom:1rem;">Run a scan to start finding opportunities:</p>
-                        <pre style="background:var(--bg-card); padding:.75rem; border-radius:6px; text-align:left; font-size:.85rem;"><code>python3 opportunity_finder.py --mode all</code></pre>
-                    {% endif %}
+                    <p>No programs discovered yet.</p>
+                    <pre style="background:var(--bg-card); padding:.75rem; border-radius:6px; text-align:left; font-size:.85rem;"><code>python3 opportunity_finder.py --mode all</code></pre>
                 </div>
             {% endif %}
         </div>
     </div>
 
-    <!-- Right: Recent Changes -->
+    <!-- Right: Recent Changes — with program names and links -->
     <div class="card">
-        <div class="card-header">🔄 Recent Changes</div>
-        <div class="card-body">
+        <div class="card-header">🔄 Recent Changes (Actionable)</div>
+        <div class="card-body" style="padding:.5rem;">
             {% if recent_changes %}
-                {% for c in recent_changes %}
-                    <div class="change-item">
-                        <span class="change-icon">{% if 'new' in c.change_type %}🆕{% elif 'scope' in c.change_type %}📈{% elif 'bounty' in c.change_type %}💰{% elif 'event' in c.change_type %}🔥{% else %}⚡{% endif %}</span>
-                        <div class="change-details">
-                            <div class="change-type">{{ c.change_type|replace('_', ' ')|title }}</div>
-                            {% if c.program_name is defined and c.program_name != 'Unknown' %}
-                                <div class="change-program">{{ c.program_name }}</div>
-                            {% endif %}
+                {% for c in recent_changes[:12] %}
+                    <a href="/program/{{ c.program_id }}" style="text-decoration:none; color:inherit;" title="Click to see program details">
+                        <div class="change-item" style="cursor:pointer;">
+                            <span class="change-icon">{% if 'new' in c.change_type %}🆕{% elif 'scope' in c.change_type %}📈{% elif 'bounty' in c.change_type %}💰{% elif 'event' in c.change_type %}🔥{% else %}⚡{% endif %}</span>
+                            <div class="change-details">
+                                <div class="change-type">{{ c.change_type|replace('_', ' ')|title }}</div>
+                                {% if c.program_name is defined and c.program_name != 'Unknown' %}
+                                    <div class="change-program" style="font-weight:600; color:var(--accent-blue);">{{ c.program_name }}</div>
+                                {% endif %}
+                            </div>
+                            <span class="change-time">{{ c.detected_at[:16] }}</span>
                         </div>
-                        <span class="change-time">{{ c.detected_at[:16] }}</span>
-                    </div>
+                    </a>
                 {% endfor %}
             {% else %}
                 <div class="empty-state">
@@ -164,31 +168,12 @@
 </div>
 {% endif %}
 
-<!-- ─── Focus Area Breakdown ───────────────────────────────────── -->
-{% if focus_counts %}
-<div class="card mt-2">
-    <div class="card-header">📊 Programs by Focus Area</div>
-    <div class="card-body" style="display:flex; gap:1.5rem; flex-wrap:wrap;">
-        {% for key, count in focus_counts.items() %}
-            {% if key in FOCUS_AREAS %}
-                <div style="text-align:center; min-width:100px;">
-                    <div style="font-size:2rem;">{{ FOCUS_AREAS[key].icon }}</div>
-                    <div style="font-weight:700; font-size:1.5rem; color:var(--accent-blue);">{{ count }}</div>
-                    <div class="text-sm text-muted">{{ FOCUS_AREAS[key].name }}</div>
-                </div>
-            {% endif %}
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
 <!-- ─── Quick Actions ──────────────────────────────────────────── -->
 <div class="card mt-2">
     <div class="card-header">⚡ Quick Actions</div>
     <div class="card-body" style="display:flex; gap:1rem; flex-wrap:wrap;">
-        <a href="/programs?focus=api" class="filter-chip active" style="text-decoration:none;">🔌 API Programs</a>
-        <a href="/programs?focus=llm" class="filter-chip active" style="text-decoration:none;">🤖 LLM/AI Programs</a>
-        <a href="/programs?focus=mobile" class="filter-chip active" style="text-decoration:none;">📱 Mobile Programs</a>
+        <a href="/programs?platform=intigriti" class="filter-chip active" style="text-decoration:none;">🎯 Intigriti Programs (Low Competition)</a>
+        <a href="/programs?platform=hackerone" class="filter-chip active" style="text-decoration:none;">🏴 HackerOne Programs</a>
         <a href="/strategy" class="filter-chip active" style="text-decoration:none;">💡 Strategy Guide</a>
     </div>
 </div>
