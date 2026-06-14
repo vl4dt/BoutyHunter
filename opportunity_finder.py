@@ -40,72 +40,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("boutyhunter")
 
-# ─── Focus Areas ────────────────────────────────────────────────────────
-
-FOCUS_AREAS = {
-    "api": {
-        "name": "API Security",
-        "tags": ["api", "rest", "graphql", "grpc"],
-        "vulnerabilities": [
-            "BOLA", "IDOR", "broken object level authorization",
-            "BFLA", "broken function level authorization",
-            "broken authentication", "token manipulation",
-            "mass assignment", "insecure deserialization",
-        ],
-    },
-    "llm": {
-        "name": "LLM / AI Security",
-        "tags": ["ai", "ml", "llm", "chatbot", "copilot", "assistant"],
-        "vulnerabilities": [
-            "prompt injection", "data leakage", "training data extraction",
-            "excessive agency", "sensitive information disclosure",
-            "model manipulation", "jailbreak",
-        ],
-    },
-    "mobile": {
-        "name": "Mobile App Security",
-        "tags": ["android", "ios", "mobile", "apk", "ipa"],
-        "vulnerabilities": [
-            "insecure data storage", "ssl pinning bypass",
-            "certificate validation", "intent injection",
-            "insecure communication", "root detection bypass",
-        ],
-    },
-}
-
-# ─── Platform Metadata (for scoring) ────────────────────────────────────
-
-PLATFORMS = {
-    "hackerone": {
-        "name": "HackerOne",
-        "site": "hackerone.com",
-        "competition_level": "extreme",
-        "triage_speed_days": 5,
-    },
-    "intigriti": {
-        "name": "Intigriti",
-        "site": "intigriti.com",
-        "competition_level": "low",
-        "triage_speed_days": 1,
-    },
-    "bugcrowd": {
-        "name": "Bugcrowd",
-        "site": "bugcrowd.com",
-        "competition_level": "moderate",
-        "triage_speed_days": 3,
-    },
-    "yeswehack": {
-        "name": "YesWeHack",
-        "site": "yeswehack.com",
-        "competition_level": "low",
-        "triage_speed_days": 3,
-    },
-}
-
-COMPETITION_SCORES = {
-    "extreme": 10, "high": 7, "moderate": 4, "low": 2, "very_low": 1,
-}
-
 # ─── Web Search Queries (target program pages only) ──────────────
 
 SEARCH_QUERIES = [
@@ -142,18 +76,14 @@ def is_program_url(url: str) -> bool:
     """Check if a URL points to an actual bug bounty program (not blog/report/article)."""
     url_lower = url.lower()
 
-    # Exclude known non-program patterns
     for pattern in URL_EXCLUDE_PATTERNS:
         if pattern.lower() in url_lower:
             return False
 
-    # Must be on a known platform domain and match program path patterns
     # HackerOne: /<program-slug> (top-level path segment, not /reports/ or /blog/)
     if "hackerone.com" in url_lower:
-        # Exclude listing pages
         if "/bug-bounty-programs" in url_lower:
             return False
-        # Program URLs are like hackerone.com/<slug>
         path = url_lower.split("hackerone.com", 1)[-1]
         if path and not path.startswith(("/reports/", "/blog/", "/resources/", "/learn/", "/programs")):
             return True
@@ -172,76 +102,14 @@ def is_program_url(url: str) -> bool:
 
     return False
 
-# ─── Helpers ────────────────────────────────────────────────────────────
-
-def find_platform_key(url_or_name: str) -> str | None:
-    """Find which platform a URL or name belongs to."""
-    text = (url_or_name or "").lower()
-    for key, plat in PLATFORMS.items():
-        if plat["site"] in text or plat["name"].lower() in text:
-            return key
-    for key in PLATFORMS:
-        if key in text:
-            return key
-    return None
-
-def score_program(program: dict) -> tuple[float, list[str]]:
-    """Score a program. Returns (score, breakdown_reasons).
-
-    Higher score = better opportunity.
-    breakdown_reasons is a list of human-readable strings explaining why this
-    program ranks where it does — each reason shows the factor and its contribution.
-    """
-    platform_key = find_platform_key(program.get("url", "")) or find_platform_key(program.get("platform", ""))
-    if not platform_key:
-        return 0, ["Unknown platform — no score"]
-
-    platform = PLATFORMS[platform_key]
-    reasons: list[str] = []
-
-    # Competition penalty (lower competition = higher score)
-    comp_level = platform["competition_level"]
-    comp_score = COMPETITION_SCORES.get(comp_level, 5)
-    comp_bonus = -comp_score
-    comp_labels = {
-        "extreme": "EXTREME — many hunters competing", "high": "HIGH — crowded",
-        "moderate": "MODERATE — some competition", "low": "LOW — fewer hunters",
-        "very_low": "VERY LOW — almost no competition",
-    }
-    reasons.append(f"Competition: {comp_labels.get(comp_level, comp_level)} → {comp_bonus:+.0f}")
-
-    # Triage speed bonus (faster triage = higher score)
-    triage_days = platform["triage_speed_days"]
-    triage_bonus = max(0, 10 - triage_days)
-    reasons.append(f"Triage speed: {triage_days}d turnaround → +{triage_bonus}")
-
-    # Focus area bonus: LLM/AI is hottest opportunity right now
-    focus_bonus_map = {"llm": (8, "LLM/AI — emerging field, least competition"),
-                       "mobile": (5, "Mobile — specialized tooling barrier"),
-                       "api": (3, "API — backend dev experience advantage")}
-    focus_areas = program.get("focus_areas", [])
-    for area in focus_areas:
-        if area in focus_bonus_map:
-            bonus, label = focus_bonus_map[area]
-            reasons.append(f"Focus: {label} → +{bonus}")
-
-    # Payout bonus (higher max payout = more serious program)
-    max_payout = program.get("max_payout_usd", 0) or 0
-    payout_bonus = min(5, max_payout / 25000) if max_payout else 0
-    reasons.append(f"Payout: ${max_payout:,} max → +{payout_bonus:.1f}")
-
-    total = triage_bonus - comp_score + sum(
-        focus_bonus_map.get(a, (0, ""))[0] for a in focus_areas if a in focus_bonus_map
-    ) + payout_bonus
-
-    return round(total, 1), reasons
-
-# ─── Web Search Mode ──────────────────────────────────────────────────
+# ─── Web Search Mode ──────────────────────────────────────────────
 
 def filter_search_queries(platform_filter):
     """Filter search queries by platform. If no filter, return all."""
     if not platform_filter:
         return SEARCH_QUERIES
+
+    from constants import PLATFORMS
 
     filtered = []
     for query, category in SEARCH_QUERIES:
@@ -295,7 +163,7 @@ def run_web_search(platform_filter=None):
         except Exception as e:
             logger.error("Web search error for '%s': %s", query[:50], e)
 
-    # ─── Filter: keep only actual program URLs ──────────────────────
+    # Filter: keep only actual program URLs
     filtered = [r for r in results if is_program_url(r.get("url", ""))]
     excluded_count = len(results) - len(filtered)
     if excluded_count > 0:
@@ -312,15 +180,18 @@ def run_web_search(platform_filter=None):
     logger.info("Web search found %d program results (after filtering)", len(unique))
     return unique
 
-# ─── Output Formatting ────────────────────────────────────────────────
+# ─── Output Formatting ──────────────────────────────────────────────
 
 def print_header():
     import sys
+    from constants import FOCUS_AREAS
+
+    focus_names = " | ".join(FOCUS_AREAS[f]["name"] for f in ("api", "llm", "mobile"))
     print()
     print("╔══════════════════════════════════════════════════════════╗", flush=True)
     print("║       🎯 BoutyHunter — Bug Bounty Opportunity Finder     ║", flush=True)
     print("╠══════════════════════════════════════════════════════════╣", flush=True)
-    print("║  Focus: API | LLM/AI | Mobile (Web excluded)           ║", flush=True)
+    print(f"║  Focus: {focus_names}                              ║", flush=True)
     print("╚══════════════════════════════════════════════════════════╝", flush=True)
     sys.stdout.flush()
 
@@ -333,6 +204,9 @@ def comp_label(level):
 
 def print_programs(programs):
     """Print ranked programs with temporal signals and score breakdown."""
+    from constants import FOCUS_AREAS, PLATFORMS
+    from scoring import find_platform_key
+
     if not programs:
         print("\n  No programs found.")
         return
@@ -422,6 +296,9 @@ def print_search_results(results):
 
 def print_strategy(programs):
     """Print strategy recommendations."""
+    from constants import FOCUS_AREAS, PLATFORMS
+    from scoring import find_platform_key
+
     if not programs:
         return
 
@@ -490,10 +367,68 @@ def print_strategy(programs):
             plat_name = PLATFORMS[plat]["name"] if plat else "Unknown"
             print(f"     • {p['name']} ({plat_name}) → ${p.get('max_payout_usd', 0):,}")
 
+# ─── Scan Orchestration ──────────────────────────────────────────────
+
+def run_api_scan(client, args_focus=None, args_platform=None):
+    """Run the API-based program discovery and return scored programs."""
+    from db import (
+        init_db, upsert_program, get_all_programs, detect_changes,
+        record_changes, get_recent_changes, record_scan, get_temporal_boost,
+    )
+    from scoring import score_program
+
+    init_db()
+
+    programs = client.discover_programs(focus_filter=args_focus, platform_filter=args_platform)
+
+    scored = []
+    total_changes = 0
+    new_count = 0
+
+    for p in programs:
+        # Detect changes vs stored state
+        changes = detect_changes(p)
+        if changes:
+            total_changes += len(changes)
+            new_count += 1 if "new_program" in [c["change_type"] for c in changes] else 0
+
+        # Track first_seen
+        existing = get_all_programs()
+        old_row = next((ep for ep in existing if ep.get("url") == p.get("url")), None)
+        p["first_seen"] = old_row.get("first_seen", datetime.now().isoformat()) if old_row else datetime.now().isoformat()
+
+        # Calculate base score + temporal boost
+        base_score, breakdown = score_program(p)
+        temporal_boost = get_temporal_boost(p, days=7)
+        final_score = round(base_score + temporal_boost, 1)
+
+        p["score_breakdown"] = breakdown
+        if temporal_boost > 0:
+            p["score_breakdown"].append(f"Temporal boost: active signal → +{temporal_boost:.1f}")
+
+        p["score"] = final_score
+        is_new = changes and "new_program" in [c["change_type"] for c in changes]
+        if is_new:
+            p["is_new_program"] = (datetime.now() - datetime.fromisoformat(p.get("first_seen", datetime.now().isoformat()))).days <= 7
+
+        # Store in DB
+        prog_id = upsert_program(p)
+
+        # Record changes
+        if changes:
+            record_changes(prog_id, changes)
+
+        p["recent_changes"] = get_recent_changes(days=7, program_id=prog_id)[:5]
+        scored.append(p)
+
+    scored.sort(key=lambda x: x.get("score", 0), reverse=True)
+    return scored, total_changes, new_count
+
 # ─── Main ──────────────────────────────────────────────────────────────
 
 def main():
     import argparse
+    from constants import FOCUS_AREAS, PLATFORMS
 
     parser = argparse.ArgumentParser(
         description="Find and rank bug bounty opportunities.",
@@ -508,42 +443,15 @@ Examples:
   %(prog)s -o results.json                    # Save to file
         """,
     )
-    parser.add_argument(
-        "--mode", "-m",
-        choices=["all", "api", "search"],
-        default="all",
-        help="Scan mode (default: all)",
-    )
-    parser.add_argument(
-        "--focus", "-f",
-        nargs="+",
-        choices=list(FOCUS_AREAS.keys()),
-        help="Filter by focus area(s): api, llm, mobile",
-    )
-    parser.add_argument(
-        "--platform", "-p",
-        nargs="+",
-        choices=list(PLATFORMS.keys()),
-        help="Filter by platform(s): hackerone, intigriti, bugcrowd, yeswehack",
-    )
-    parser.add_argument(
-        "--output", "-o",
-        help="Output file path for JSON results",
-    )
-    parser.add_argument(
-        "--quiet", "-q",
-        action="store_true",
-        help="Suppress log messages (show only results)",
-    )
-    parser.add_argument(
-        "--status", "-s",
-        action="store_true",
-        help="Show database status: stored programs, recent changes, scan history",
-    )
+    parser.add_argument("--mode", "-m", choices=["all", "api", "search"], default="all")
+    parser.add_argument("--focus", "-f", nargs="+", choices=list(FOCUS_AREAS.keys()))
+    parser.add_argument("--platform", "-p", nargs="+", choices=list(PLATFORMS.keys()))
+    parser.add_argument("--output", "-o", help="Output file path for JSON results")
+    parser.add_argument("--quiet", "-q", action="store_true")
+    parser.add_argument("--status", "-s", action="store_true")
 
     args = parser.parse_args()
 
-    # Adjust logging level based on quiet flag
     if args.quiet:
         logging.getLogger("boutyhunter").setLevel(logging.WARNING)
 
@@ -551,52 +459,8 @@ Examples:
 
     # ─── Status Mode ──────────────────────────────────────────────
     if args.status:
-        from db import init_db, get_all_programs, get_recent_changes, get_scan_history
-        init_db()
-
-        programs = get_all_programs(status_filter="active")
-        changes = get_recent_changes(days=7)
-        history = get_scan_history(days=30)
-
-        print(f"\n  📊 DATABASE STATUS")
-        print(f"  ────────────────")
-        print(f"  Active programs: {len(programs)}")
-        print(f"  Recent changes (7d): {len(changes)}")
-        print(f"  Scans (30d): {len(history)}")
-
-        if programs:
-            print(f"\n  📋 STORED PROGRAMS")
-            for i, p in enumerate(programs[:15], 1):
-                focus = ", ".join(FOCUS_AREAS[f]["name"] for f in p.get("focus_areas", []) if f in FOCUS_AREAS)
-                print(f"    {i}. {p['name']} ({p['platform']}) — ${p.get('max_payout_usd', 0):,} | {focus}")
-            if len(programs) > 15:
-                print(f"    ... and {len(programs) - 15} more")
-
-        if changes:
-            print(f"\n  🔄 RECENT CHANGES (last 7 days)")
-            for c in changes[:20]:
-                prog = get_all_programs()[:]
-                prog_name = "Unknown"
-                for p in programs:
-                    if p.get("id") == c["program_id"]:
-                        prog_name = p["name"]
-                        break
-                print(f"    [{c['detected_at'][:19]}] {prog_name}: {c['change_type'].replace('_', ' ').title()}")
-
-        if history:
-            print(f"\n  📈 SCAN HISTORY (last 30 days)")
-            for s in history[:10]:
-                print(f"    [{s['scan_time'][:19]}] mode={s['mode']} | found={s['programs_found']} | new={s['new_programs']} | changes={s['changes_detected']}")
-
-        return  # Exit after status display
-
-    # ─── Initialize Database ──────────────────────────────────────
-    from db import (
-        init_db, upsert_program, get_all_programs, detect_changes,
-        record_changes, get_recent_changes, record_scan, get_temporal_boost,
-    )
-
-    init_db()
+        _print_status(args)
+        return
 
     all_data = {
         "scan_date": datetime.now().isoformat(),
@@ -606,9 +470,6 @@ Examples:
         "new_programs": 0,
     }
 
-    total_changes = 0
-    new_count = 0
-
     # ─── Mode 1: API Discovery ────────────────────────────────────
     if args.mode in ("all", "api"):
         logger.info("Starting API-based program discovery...")
@@ -616,60 +477,12 @@ Examples:
 
         config = load_config(CONFIG_FILE)
         client = PlatformClient(config)
-        programs = client.discover_programs(focus_filter=args.focus, platform_filter=args.platform)
+        scored, total_changes, new_count = run_api_scan(client, args.focus, args.platform)
 
-        # Process each discovered program: detect changes, store, score with temporal boosts
-        scored = []
-        for p in programs:
-            # Detect changes vs stored state
-            changes = detect_changes(p)
-            if changes:
-                total_changes += len(changes)
-                new_count += 1 if "new_program" in [c["change_type"] for c in changes] else 0
-
-            # Store/update program with first_seen tracking
-            existing = get_all_programs()
-            old_row = None
-            for ep in existing:
-                if ep.get("url") == p.get("url"):
-                    old_row = ep
-                    break
-
-            if old_row:
-                p["first_seen"] = old_row.get("first_seen", datetime.now().isoformat())
-            else:
-                p["first_seen"] = datetime.now().isoformat()
-
-            # Calculate base score + temporal boost
-            base_score, breakdown = score_program(p)
-            temporal_boost = get_temporal_boost(p, days=7)
-            final_score = round(base_score + temporal_boost, 1)
-
-            # Attach breakdown to the program for display
-            p["score_breakdown"] = breakdown
-            if temporal_boost > 0:
-                p["score_breakdown"].append(f"Temporal boost: active signal → +{temporal_boost:.1f}")
-
-            # Set temporal signal flags for display
-            p["score"] = final_score
-            p["is_new_program"] = (datetime.now() - datetime.fromisoformat(p.get("first_seen", datetime.now().isoformat()))).days <= 7 if changes and "new_program" in [c["change_type"] for c in changes] else False
-
-            # Store in DB
-            prog_id = upsert_program(p)
-
-            # Record changes
-            if changes:
-                record_changes(prog_id, changes)
-
-            # Attach recent changes to display
-            p["recent_changes"] = get_recent_changes(days=7, program_id=prog_id)[:5]
-
-            scored.append(p)
-
-        # Sort by score (highest first)
-        scored.sort(key=lambda x: x.get("score", 0), reverse=True)
         print_programs(scored)
         all_data["api_programs"] = scored
+        all_data["changes_detected"] = total_changes
+        all_data["new_programs"] = new_count
 
     # ─── Mode 2: Web Search ───────────────────────────────────────
     if args.mode in ("all", "search"):
@@ -683,15 +496,13 @@ Examples:
         print_strategy(all_data["api_programs"])
 
     # ─── Record Scan Metadata ─────────────────────────────────────
+    from db import record_scan
     record_scan(
         mode=args.mode,
         programs_found=len(all_data.get("api_programs", [])),
-        new_programs=new_count,
-        changes_detected=total_changes,
+        new_programs=all_data["new_programs"],
+        changes_detected=all_data["changes_detected"],
     )
-
-    all_data["changes_detected"] = total_changes
-    all_data["new_programs"] = new_count
 
     # ─── Save to File ─────────────────────────────────────────────
     output_path = args.output or f"opportunity_scan_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
@@ -700,8 +511,48 @@ Examples:
 
     print()
     print(f"  📄 Results saved to: {output_path}")
-    if total_changes > 0:
-        print(f"  🔄 Changes detected: {total_changes} ({new_count} new programs)")
+    if all_data["changes_detected"] > 0:
+        print(f"  🔄 Changes detected: {all_data['changes_detected']} ({all_data['new_programs']} new programs)")
+
+def _print_status(args):
+    """Print database status (extracted from main for clarity)."""
+    from db import init_db, get_all_programs, get_recent_changes, get_scan_history
+    from constants import FOCUS_AREAS
+
+    init_db()
+
+    programs = get_all_programs(status_filter="active")
+    changes = get_recent_changes(days=7)
+    history = get_scan_history(days=30)
+
+    print(f"\n  📊 DATABASE STATUS")
+    print(f"  ────────────────")
+    print(f"  Active programs: {len(programs)}")
+    print(f"  Recent changes (7d): {len(changes)}")
+    print(f"  Scans (30d): {len(history)}")
+
+    if programs:
+        print(f"\n  📋 STORED PROGRAMS")
+        for i, p in enumerate(programs[:15], 1):
+            focus = ", ".join(FOCUS_AREAS[f]["name"] for f in p.get("focus_areas", []) if f in FOCUS_AREAS)
+            print(f"    {i}. {p['name']} ({p['platform']}) — ${p.get('max_payout_usd', 0):,} | {focus}")
+        if len(programs) > 15:
+            print(f"    ... and {len(programs) - 15} more")
+
+    if changes:
+        print(f"\n  🔄 RECENT CHANGES (last 7 days)")
+        for c in changes[:20]:
+            prog_name = "Unknown"
+            for p in programs:
+                if p.get("id") == c["program_id"]:
+                    prog_name = p["name"]
+                    break
+            print(f"    [{c['detected_at'][:19]}] {prog_name}: {c['change_type'].replace('_', ' ').title()}")
+
+    if history:
+        print(f"\n  📈 SCAN HISTORY (last 30 days)")
+        for s in history[:10]:
+            print(f"    [{s['scan_time'][:19]}] mode={s['mode']} | found={s['programs_found']} | new={s['new_programs']} | changes={s['changes_detected']}")
 
 if __name__ == "__main__":
     main()

@@ -19,6 +19,7 @@ Usage:
 
 import json
 import logging
+from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -26,37 +27,6 @@ from typing import Any
 import requests
 
 logger = logging.getLogger("boutyhunter.api")
-
-# ─── Focus Area Keywords ──────────────────────────────────────────────
-
-FOCUS_KEYWORDS = {
-    "api": [
-        "api", "rest", "graphql", "grpc", "endpoint", "webhook",
-        "bola", "idor", "authorization", "authentication",
-    ],
-    "llm": [
-        "ai", "ml", "llm", "chatbot", "copilot", "assistant",
-        "prompt injection", "generative ai", "gemini", "claude",
-        "gpt", "openai", "anthropic",
-    ],
-    "mobile": [
-        "android", "ios", "mobile", "apk", "ipa", "app store",
-        "play store", "native app", "flutter", "react native",
-    ],
-}
-
-# ─── Event Detection Keywords ─────────────────────────────────────────
-
-EVENT_KEYWORDS = {
-    "hacking_contest": [
-        "contest", "hackathon", "bug bash", "hacking contest",
-        "time-limited", "limited time", "special event",
-    ],
-    "bounty_increase": [
-        "increased bounty", "higher payout", "raised reward",
-        "bonus program", "double bounty",
-    ],
-}
 
 # ─── Config Loading ──────────────────────────────────────────────────
 
@@ -70,16 +40,110 @@ def load_config(config_path: str | Path = None) -> dict[str, Any]:
     with open(config_path) as f:
         return yaml.safe_load(f) or {}
 
+# ─── Base Platform Client ──────────────────────────────────────────────
+
+class BasePlatformClient(ABC):
+    """Shared logic for all platform API clients.
+
+    Subclasses only need to implement:
+      - get_programs() → list of raw dicts from the API
+      - parse_raw()   → convert one raw dict into our standard program format
+    Everything else (focus detection, event detection, scope extraction) is shared.
+    """
+
+    PLATFORM_KEY: str = "unknown"  # e.g. "bugcrowd", "yeswehack", "intigriti"
+
+    def __init__(self, config: dict[str, Any]):
+        self.enabled = config.get("enabled", False)
+
+    @abstractmethod
+    def get_programs(self) -> list[dict[str, Any]]:
+        """Fetch raw program data from the platform API."""
+        ...
+
+    @abstractmethod
+    def parse_raw(self, raw: dict[str, Any]) -> dict[str, Any] | None:
+        """Convert one raw API response into our standard program dict.
+
+        Must return a dict with at least: name, description (str), scope_details (dict).
+        The base class will add focus_areas and event detection automatically.
+        """
+        ...
+
+    def parse_program(self, raw: dict[str, Any]) -> dict[str, Any] | None:
+        """Parse a program — delegates to subclass then enriches with shared logic."""
+        try:
+            parsed = self.parse_raw(raw)
+            if parsed is None:
+                return None
+
+            # Enrich with focus areas and event detection (shared across all platforms)
+            description = (parsed.get("description", "") or "").lower()
+            scope_details = parsed.get("scope_details", {})
+            combined_text = description + " " + json.dumps(scope_details).lower()
+
+            parsed["focus_areas"] = self._detect_focus(combined_text)
+            parsed["has_active_event"] = False
+            parsed["event_details"] = None
+
+            event_info = self._detect_events(description, scope_details)
+            if event_info:
+                parsed["has_active_event"] = True
+                parsed["event_details"] = event_info
+
+            return parsed
+
+        except Exception as e:
+            logger.debug("Parse error for program %s on %s: %s", raw.get("id"), self.PLATFORM_KEY, e)
+            return None
+
+    @staticmethod
+    def _detect_focus(combined_text: str) -> list[str]:
+        """Detect focus areas from combined text using keyword matching."""
+        from constants import FOCUS_KEYWORDS
+
+        focus_areas = []
+        for area, keywords in FOCUS_KEYWORDS.items():
+            if any(kw in combined_text for kw in keywords):
+                focus_areas.append(area)
+        return focus_areas or ["api"]  # default to api
+
+    @staticmethod
+    def _detect_events(
+        description: str, scope_details: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        """Detect special events like hacking contests or bounty increases."""
+        from constants import EVENT_KEYWORDS
+
+        for event_type, keywords in EVENT_KEYWORDS.items():
+            if any(kw in description.lower() for kw in keywords):
+                return {
+                    "type": event_type,
+                    "detected_at": datetime.now().isoformat(),
+                    "source_text": description[:200],
+                }
+
+        # Large scope = potential opportunity
+        if scope_details.get("count", 0) > 15:
+            return {
+                "type": "large_scope",
+                "detected_at": datetime.now().isoformat(),
+                "asset_count": scope_details["count"],
+            }
+
+        return None
+
 # ─── Bugcrowd API Client ──────────────────────────────────────────────
 
-class BugcrowdClient:
+class BugcrowdClient(BasePlatformClient):
     """Bugcrowd API — has the most useful /programs endpoint for discovery."""
 
+    PLATFORM_KEY = "bugcrowd"
     BASE_URL = "https://api.bugcrowd.com"
     PROGRAMS_ENDPOINT = "/programs"
 
     def __init__(self, config: dict[str, Any]):
-        self.enabled = config.get("enabled", False)
+        super().__init__(config)
         self.token_key = config.get("token_key", "")
         self.token_secret = config.get("token_secret", "")
         self.session = requests.Session()
@@ -139,49 +203,21 @@ class BugcrowdClient:
             logger.error("Bugcrowd unexpected error: %s", e)
             return []
 
-    def parse_program(self, raw: dict[str, Any]) -> dict[str, Any] | None:
-        """Parse a Bugcrowd program into our standard format with full details."""
-        try:
-            attributes = raw.get("attributes", {})
-            relationships = raw.get("relationships", {})
+    def parse_raw(self, raw: dict[str, Any]) -> dict[str, Any] | None:
+        """Parse a Bugcrowd program into our standard format."""
+        attributes = raw.get("attributes", {})
+        relationships = raw.get("relationships", {})
 
-            # Extract scope info
-            scope_details = self._extract_scope(relationships)
-
-            # Combined text for focus area detection
-            combined_text = (
-                attributes.get("name", "") + " " +
-                attributes.get("description", "") + " " +
-                json.dumps(scope_details).lower()
-            ).lower()
-
-            # Determine focus areas
-            focus_areas = []
-            for area, keywords in FOCUS_KEYWORDS.items():
-                if any(kw in combined_text for kw in keywords):
-                    focus_areas.append(area)
-            if not focus_areas:
-                focus_areas = ["api"]  # default
-
-            # Detect events (hacking contests, bounty increases)
-            event_info = self._detect_events(attributes, scope_details)
-
-            return {
-                "name": attributes.get("name", "Unknown"),
-                "platform": "bugcrowd",
-                "url": f"https://bugcrowd.com/{attributes.get('handle', 'unknown')}",
-                "focus_areas": focus_areas,
-                "max_payout_usd": self._extract_max_payout(attributes),
-                "description": attributes.get("description", "")[:500],
-                "scope_details": scope_details,
-                "status": attributes.get("status", "unknown"),
-                "has_active_event": event_info is not None,
-                "event_details": event_info,
-            }
-
-        except Exception as e:
-            logger.debug("Bugcrowd parse error for program %s: %s", raw.get("id"), e)
-            return None
+        scope_details = self._extract_scope(relationships)
+        return {
+            "name": attributes.get("name", "Unknown"),
+            "platform": self.PLATFORM_KEY,
+            "url": f"https://bugcrowd.com/{attributes.get('handle', 'unknown')}",
+            "max_payout_usd": self._extract_max_payout(attributes),
+            "description": attributes.get("description", "")[:500],
+            "scope_details": scope_details,
+            "status": attributes.get("status", "unknown"),
+        }
 
     def _extract_scope(self, relationships: dict[str, Any]) -> dict[str, Any]:
         """Extract detailed scope information from Bugcrowd relationships."""
@@ -203,31 +239,8 @@ class BugcrowdClient:
             "count": len(scope_data),
         }
 
-    def _detect_events(self, attributes: dict[str, Any], scope_details: dict[str, Any]) -> dict[str, Any] | None:
-        """Detect special events like hacking contests or bounty increases."""
-        text = (attributes.get("description", "") + " ").lower()
-
-        for event_type, keywords in EVENT_KEYWORDS.items():
-            if any(kw in text for kw in keywords):
-                return {
-                    "type": event_type,
-                    "detected_at": datetime.now().isoformat(),
-                    "source_text": attributes.get("description", "")[:200],
-                }
-
-        # Check if scope was recently expanded (many new assets)
-        if scope_details.get("count", 0) > 15:
-            return {
-                "type": "large_scope",
-                "detected_at": datetime.now().isoformat(),
-                "asset_count": scope_details["count"],
-            }
-
-        return None
-
     def _extract_max_payout(self, attrs: dict[str, Any]) -> int:
         """Try to extract max payout from Bugcrowd program attributes."""
-        # Check for explicit bounty info in attributes
         if "max_bounty_amount" in attrs:
             try:
                 return int(attrs["max_bounty_amount"])
@@ -244,13 +257,14 @@ class BugcrowdClient:
 
 # ─── YesWeHack API Client ─────────────────────────────────────────────
 
-class YesWeHackClient:
+class YesWeHackClient(BasePlatformClient):
     """YesWeHack API — requires CSM approval + OAuth setup."""
 
+    PLATFORM_KEY = "yeswehack"
     BASE_URL = "https://apps.yeswehack.com"
 
     def __init__(self, config: dict[str, Any]):
-        self.enabled = config.get("enabled", False)
+        super().__init__(config)
         self.client_id = config.get("client_id", "")
         self.client_secret = config.get("client_secret", "")
         self.redirect_uri = config.get("redirect_uri", "")
@@ -272,7 +286,7 @@ class YesWeHackClient:
             )
             programs = client.get_programs()  # type: ignore[attr-defined]
             logger.info("YesWeHack (SDK): fetched %d programs", len(programs))
-            return [self.parse_program(p) for p in programs if self.parse_program(p)]
+            return programs
 
         except ImportError:
             logger.info("YesWeHack SDK not installed. Install with: pip install yeswehack")
@@ -319,7 +333,7 @@ class YesWeHackClient:
             data = resp.json()
             raw_programs = data.get("programs", data) if isinstance(data, dict) else data
             logger.info("YesWeHack (API): fetched %d programs", len(raw_programs))
-            return [self.parse_program(p) for p in raw_programs if self.parse_program(p)]
+            return raw_programs
 
         except requests.RequestException as e:
             logger.error("YesWeHack API request failed: %s", e)
@@ -328,50 +342,14 @@ class YesWeHackClient:
             logger.error("YesWeHack unexpected error: %s", e)
             return []
 
-    def parse_program(self, raw: dict[str, Any]) -> dict[str, Any] | None:
-        """Parse a YesWeHack program into our standard format with full details."""
-        try:
-            name = raw.get("name", "Unknown")
-            description = (raw.get("description", "") or "").lower()
+    def parse_raw(self, raw: dict[str, Any]) -> dict[str, Any] | None:
+        """Parse a YesWeHack program into our standard format."""
+        name = raw.get("name", "Unknown")
+        description = (raw.get("description", "") or "")[:500]
 
-            # Extract scope details
-            scope_details = self._extract_scope(raw)
-
-            # Determine focus areas
-            combined_text = description + " " + json.dumps(scope_details).lower()
-            focus_areas = []
-            for area, keywords in FOCUS_KEYWORDS.items():
-                if any(kw in combined_text for kw in keywords):
-                    focus_areas.append(area)
-            if not focus_areas:
-                focus_areas = ["api"]
-
-            # Detect events
-            event_info = self._detect_events(description, scope_details)
-
-            return {
-                "name": name,
-                "platform": "yeswehack",
-                "url": f"https://app.yeswehack.com/{raw.get('slug', 'unknown')}",
-                "focus_areas": focus_areas,
-                "max_payout_usd": raw.get("max_bounty_amount", 15000),
-                "description": (raw.get("description", "") or "")[:500],
-                "scope_details": scope_details,
-                "status": raw.get("state", "unknown"),
-                "has_active_event": event_info is not None,
-                "event_details": event_info,
-            }
-
-        except Exception as e:
-            logger.debug("YesWeHack parse error for program %s: %s", raw, e)
-            return None
-
-    def _extract_scope(self, raw: dict[str, Any]) -> dict[str, Any]:
-        """Extract scope details from YesWeHack program data."""
+        # Extract scope details
         assets = []
         descriptions = []
-
-        # Try common field names for scope info
         for key in ("scope", "targets", "assets", "in_scope"):
             val = raw.get(key)
             if isinstance(val, list):
@@ -380,39 +358,29 @@ class YesWeHackClient:
                 descriptions.append(str(val))
 
         return {
-            "assets": list(set(assets)),
-            "descriptions": descriptions,
-            "count": len(assets) + len(descriptions),
+            "name": name,
+            "platform": self.PLATFORM_KEY,
+            "url": f"https://app.yeswehack.com/{raw.get('slug', 'unknown')}",
+            "max_payout_usd": raw.get("max_bounty_amount", 15000),
+            "description": description,
+            "scope_details": {
+                "assets": list(set(assets)),
+                "descriptions": descriptions,
+                "count": len(assets) + len(descriptions),
+            },
+            "status": raw.get("state", "unknown"),
         }
-
-    def _detect_events(self, description: str, scope_details: dict[str, Any]) -> dict[str, Any] | None:
-        """Detect special events in YesWeHack program data."""
-        for event_type, keywords in EVENT_KEYWORDS.items():
-            if any(kw in description.lower() for kw in keywords):
-                return {
-                    "type": event_type,
-                    "detected_at": datetime.now().isoformat(),
-                    "source_text": description[:200],
-                }
-
-        if scope_details.get("count", 0) > 15:
-            return {
-                "type": "large_scope",
-                "detected_at": datetime.now().isoformat(),
-                "asset_count": scope_details["count"],
-            }
-
-        return None
 
 # ─── Intigriti API Client ─────────────────────────────────────────────
 
-class IntigritiClient:
+class IntigritiClient(BasePlatformClient):
     """Intigriti API — primarily org-facing but has some researcher endpoints."""
 
+    PLATFORM_KEY = "intigriti"
     BASE_URL = "https://api.intigriti.com"
 
     def __init__(self, config: dict[str, Any]):
-        self.enabled = config.get("enabled", False)
+        super().__init__(config)
         self.token = config.get("token", "")
 
     def get_programs(self) -> list[dict[str, Any]]:
@@ -437,7 +405,7 @@ class IntigritiClient:
             data = resp.json()
             raw_programs = data.get("programs", data) if isinstance(data, dict) else data
             logger.info("Intigriti: fetched %d programs", len(raw_programs))
-            return [self.parse_program(p) for p in raw_programs if self.parse_program(p)]
+            return raw_programs
 
         except requests.RequestException as e:
             logger.error("Intigriti API request failed: %s", e)
@@ -446,49 +414,14 @@ class IntigritiClient:
             logger.error("Intigriti unexpected error: %s", e)
             return []
 
-    def parse_program(self, raw: dict[str, Any]) -> dict[str, Any] | None:
-        """Parse an Intigriti program into our standard format with full details."""
-        try:
-            name = raw.get("name", "Unknown")
-            description = (raw.get("description", "") or "").lower()
+    def parse_raw(self, raw: dict[str, Any]) -> dict[str, Any] | None:
+        """Parse an Intigriti program into our standard format."""
+        name = raw.get("name", "Unknown")
+        description = (raw.get("description", "") or "")[:500]
 
-            # Extract scope details
-            scope_details = self._extract_scope(raw)
-
-            # Determine focus areas
-            combined_text = description + " " + json.dumps(scope_details).lower()
-            focus_areas = []
-            for area, keywords in FOCUS_KEYWORDS.items():
-                if any(kw in combined_text for kw in keywords):
-                    focus_areas.append(area)
-            if not focus_areas:
-                focus_areas = ["api"]
-
-            # Detect events
-            event_info = self._detect_events(description, scope_details)
-
-            return {
-                "name": name,
-                "platform": "intigriti",
-                "url": f"https://app.intigriti.com/{raw.get('slug', 'unknown')}",
-                "focus_areas": focus_areas,
-                "max_payout_usd": raw.get("max_bounty_amount", 20000),
-                "description": (raw.get("description", "") or "")[:500],
-                "scope_details": scope_details,
-                "status": raw.get("state", "unknown"),
-                "has_active_event": event_info is not None,
-                "event_details": event_info,
-            }
-
-        except Exception as e:
-            logger.debug("Intigriti parse error for program %s: %s", raw, e)
-            return None
-
-    def _extract_scope(self, raw: dict[str, Any]) -> dict[str, Any]:
-        """Extract scope details from Intigriti program data."""
+        # Extract scope details
         assets = []
         descriptions = []
-
         for key in ("scope", "targets", "assets", "in_scope"):
             val = raw.get(key)
             if isinstance(val, list):
@@ -497,29 +430,18 @@ class IntigritiClient:
                 descriptions.append(str(val))
 
         return {
-            "assets": list(set(assets)),
-            "descriptions": descriptions,
-            "count": len(assets) + len(descriptions),
+            "name": name,
+            "platform": self.PLATFORM_KEY,
+            "url": f"https://app.intigriti.com/{raw.get('slug', 'unknown')}",
+            "max_payout_usd": raw.get("max_bounty_amount", 20000),
+            "description": description,
+            "scope_details": {
+                "assets": list(set(assets)),
+                "descriptions": descriptions,
+                "count": len(assets) + len(descriptions),
+            },
+            "status": raw.get("state", "unknown"),
         }
-
-    def _detect_events(self, description: str, scope_details: dict[str, Any]) -> dict[str, Any] | None:
-        """Detect special events in Intigriti program data."""
-        for event_type, keywords in EVENT_KEYWORDS.items():
-            if any(kw in description.lower() for kw in keywords):
-                return {
-                    "type": event_type,
-                    "detected_at": datetime.now().isoformat(),
-                    "source_text": description[:200],
-                }
-
-        if scope_details.get("count", 0) > 15:
-            return {
-                "type": "large_scope",
-                "detected_at": datetime.now().isoformat(),
-                "asset_count": scope_details["count"],
-            }
-
-        return None
 
 # ─── Unified Platform Client ──────────────────────────────────────────
 

@@ -154,9 +154,10 @@ def get_all_programs(
     params: list[Any] = []
 
     if focus_filter:
-        # Check if any of the requested focus areas are in the JSON array
+        # Use parameterized queries to avoid SQL injection
         for area in focus_filter:
-            query += f" AND focus_areas LIKE '%{area}%'"
+            query += " AND focus_areas LIKE ?"
+            params.append(f"%{area}%")
     if platform_filter:
         placeholders = ",".join("?" * len(platform_filter))
         query += f" AND platform IN ({placeholders})"

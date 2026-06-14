@@ -42,26 +42,8 @@ def inject_now():
     """Inject current datetime into all templates."""
     return {"now": datetime.now()}
 
-FOCUS_AREAS = {
-    "api": {"name": "API Security", "icon": "🔌"},
-    "llm": {"name": "LLM / AI Security", "icon": "🤖"},
-    "mobile": {"name": "Mobile App Security", "icon": "📱"},
-}
-
-PLATFORMS = {
-    "hackerone": {"name": "HackerOne", "site": "hackerone.com"},
-    "intigriti": {"name": "Intigriti", "site": "intigriti.com"},
-    "bugcrowd": {"name": "Bugcrowd", "site": "bugcrowd.com"},
-    "yeswehack": {"name": "YesWeHack", "site": "yeswehack.com"},
-}
-
-COMPETITION_LABELS = {
-    "extreme": ("EXTREME", "danger"),
-    "high": ("HIGH", "warning"),
-    "moderate": ("MODERATE", "info"),
-    "low": ("LOW", "success"),
-    "very_low": ("VERY LOW", "success"),
-}
+# Import shared constants instead of duplicating them
+from constants import FOCUS_AREAS, PLATFORMS, COMPETITION_LABELS
 
 # ─── DB Helpers (thin wrapper) ──────────────────────────────────────────
 
@@ -117,7 +99,7 @@ def programs():
     all_programs = get_programs(status_filter="active")
 
     # Regenerate score breakdown for each program (not stored in DB)
-    from opportunity_finder import score_program, find_platform_key, PLATFORMS as OPP_PLATFORMS
+    from scoring import score_program
     for p in all_programs:
         _, breakdown = score_program(p)
         p["score_breakdown"] = breakdown
