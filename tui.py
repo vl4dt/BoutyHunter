@@ -26,6 +26,7 @@ from textual.widgets import (
     TabPane,
     TabbedContent,
 )
+from textual.css.query import NoMatches
 
 logger = logging.getLogger("boutyhunter")
 
@@ -529,13 +530,6 @@ class ScanProgressScreen(ModalScreen):
     """Modal overlay showing scan progress with live log output."""
 
     DEFAULT_CSS = """
-    ModalScreen {
-        layout: grid;
-        grid-size: 1;
-        align: center middle;
-        background: $background 60%;
-    }
-
     #scan-overlay {
         width: 90vw;
         height: 75vh;
@@ -663,6 +657,10 @@ class ScanProgressScreen(ModalScreen):
 
     def on_mount(self) -> None:
         """Capture widget references and start spinner timer."""
+        # Force centering — bypass CSS cascade where parent ModalScreen wins
+        self.styles.layout = "grid"
+        self.styles.grid_size = (1, 1)
+        self.styles.align = ("center", "middle")
         try:
             labels = list(self.query("#scan-overlay > Label"))
             if labels:
@@ -743,13 +741,6 @@ class DetailsScreen(ModalScreen):
     """Modal showing full details and strategy for a selected program."""
 
     DEFAULT_CSS = """
-    ModalScreen {
-        layout: grid;
-        grid-size: 1;
-        align: center middle;
-        background: $background 60%;
-    }
-
     #details-overlay {
         width: 80%;
         height: 75%;
@@ -792,6 +783,10 @@ class DetailsScreen(ModalScreen):
             self.dismiss()
 
     def on_mount(self) -> None:
+        # Force centering — bypass CSS cascade where parent ModalScreen wins
+        self.styles.layout = "grid"
+        self.styles.grid_size = (1, 1)
+        self.styles.align = ("center", "middle")
         asyncio.create_task(self._load_details())
 
     async def _load_details(self) -> None:
