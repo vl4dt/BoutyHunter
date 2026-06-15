@@ -447,19 +447,34 @@ class BoutyHunterApp(App):
 
     def action_details(self) -> None:
         """Show details for the selected program."""
-        table = self.query_one("#programs-table", DataTable)
+        import re
+
+        # Determine which tab is active and read from the correct table
+        tabbed = self.query_one(TabbedContent)
+        active_tab_id = tabbed.active
+
+        if active_tab_id == "changes-tab":
+            table = self.query_one("#changes-table", DataTable)
+            cache_key_col = 1  # Program name is column index 1 in changes table
+        elif active_tab_id == "programs-tab":
+            table = self.query_one("#programs-table", DataTable)
+            cache_key_col = 3  # Program name is column index 3 in programs table
+        else:
+            self.notify("Details only available on Programs or Change Tracking tabs",
+                        severity="warning")
+            return
+
         if not table.ordered_rows:
-            self.notify("No programs loaded", severity="warning")
+            self.notify("No data loaded", severity="warning")
             return
         cursor_row = table.cursor_row
         if cursor_row is None or not table.is_valid_row_index(cursor_row):
-            self.notify("Select a program first (use arrow keys)", severity="warning")
+            self.notify("Select a row first (use arrow keys)", severity="warning")
             return
         row = table.get_row_at(cursor_row)
-        if row and len(row) >= 4:
-            # Row[3] is rich markup like "[bold cyan]Intel®[/]" — extract plain name
-            import re
-            raw_name = re.sub(r'\[/?[^\]]+\]', '', str(row[3])).strip()
+        if row and len(row) > cache_key_col:
+            # Extract plain name from markup like "[bold cyan]Intel®[/]"
+            raw_name = re.sub(r'\[/?[^\]]+\]', '', str(row[cache_key_col])).strip()
             self.push_screen(DetailsScreen(raw_name, self._program_cache))
 
     def action_export(self) -> None:
