@@ -741,7 +741,10 @@ class DetailsScreen(ModalScreen):
 
     CSS = """
     ModalScreen {
+        layout: grid;
+        grid-size: 1;
         align: center middle;
+        background: black 50%;
     }
 
     #details-overlay {
