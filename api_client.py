@@ -375,6 +375,14 @@ class HackerOneClient(BasePlatformClient):
 
 # ─── Unified Platform Client ──────────────────────────────────────────
 
+def _cb(callback, phase, current, total, message):
+    """Safe callback invoker."""
+    if callback is not None:
+        try:
+            callback(phase, current, total, message)
+        except Exception:
+            pass
+
 class PlatformClient:
     """Unified client that queries all configured platforms and merges results."""
 
@@ -387,21 +395,28 @@ class PlatformClient:
         self,
         focus_filter: list[str] | None = None,
         platform_filter: list[str] | None = None,
+        progress_callback=None,  # callable(phase, current, total, message)
     ) -> list[dict[str, Any]]:
         """Discover programs from all configured APIs with full details."""
         all_programs: list[dict[str, Any]] = []
 
         # Intigriti — researcher API confirmed working
         if not platform_filter or "intigriti" in platform_filter:
+            _cb(progress_callback, "api_fetch", 0, None, "Fetching Intigriti programs...")
             raw = self.intigriti.get_programs()
             parsed = [p for p in (self.intigriti.parse_program(r) for r in raw) if p]
             all_programs.extend(parsed)
+            _cb(progress_callback, "api_fetch", len(parsed), None,
+                f"Intigriti: {len(parsed)} programs fetched")
 
         # HackerOne — researcher API with Basic auth
         if not platform_filter or "hackerone" in platform_filter:
+            _cb(progress_callback, "api_fetch", 0, None, "Fetching HackerOne programs...")
             raw = self.hackerone.get_programs()
             parsed = [p for p in (self.hackerone.parse_program(r) for r in raw) if p]
             all_programs.extend(parsed)
+            _cb(progress_callback, "api_fetch", len(parsed), None,
+                f"HackerOne: {len(parsed)} programs fetched")
 
         # Apply focus filter
         if focus_filter:
@@ -411,4 +426,6 @@ class PlatformClient:
             ]
 
         logger.info("API discovery total: %d programs across platforms", len(all_programs))
+        _cb(progress_callback, "api_fetch", len(all_programs), None,
+            f"Total API programs discovered: {len(all_programs)}")
         return all_programs
