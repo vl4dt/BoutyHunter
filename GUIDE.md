@@ -10,7 +10,7 @@
 2. [Before You Start: Prerequisites](#before-you-start-prerequisites)
 3. [Installation (5 Minutes)](#installation-5-minutes)
 4. [Your First Scan](#your-first-scan)
-5. [The Web Dashboard](#the-web-dashboard)
+5. [The Terminal UI](#the-terminal-ui)
 6. [Understanding the Results](#understanding-the-results)
 7. [Configuring API Credentials (Optional but Recommended)](#configuring-api-credentials-optional-but-recommended)
 8. [Automating Scans with Cron](#automating-scans-with-cron)
@@ -30,11 +30,11 @@ BoutyHunter is a tool that helps you find the **best bug bounty programs** acros
 | Bugcrowd | bugcrowd.com |
 | YesWeHack | yeswehack.com |
 
-It focuses on the **most profitable security risks** from three OWASP categories:
+It focuses on the **most profitable security risks** from three categories:
 
-- **Web**: Broken Access Control, Cryptographic Failures, XSS
-- **API**: BOLA (Broken Object Level Authorization), Broken Authentication, Object Injection
+- **API**: BOLA (Broken Object Level Authorization), Broken Authentication, Mass Assignment
 - **LLM/AI**: Prompt Injection, Data Leakage, Excessive Agency
+- **Mobile**: Insecure Data Storage, SSL Pinning Bypass, Insecure Communication
 
 ### What Makes It Special?
 
@@ -43,7 +43,7 @@ It focuses on the **most profitable security risks** from three OWASP categories
 3. **Tracks changes over time** — new programs, scope expansions, bounty increases
 4. **Gives you strategy recommendations** — where to focus your efforts
 
-Think of it as a **radar** that tells you: *"Hey, this program just expanded its scope and nobody's tested the new stuff yet."*
+Think of it as a **radar** that tells you: *"Hey, this program just expanded its scope and nobody's testing the new stuff yet."*
 
 ---
 
@@ -116,178 +116,120 @@ That's it. No `pip install`, no manual setup, no system pollution.
 Run a quick test:
 
 ```bash
-uv run python3 opportunity_finder.py --status -q
+uv run opportunity_finder.py --status
 ```
 
 You should see something like:
 
 ```
-╔══════════════════════════════════════════════════════════╗
-║       🎯 BoutyHunter — Bug Bounty Opportunity Finder     ║
-╠══════════════════════════════════════════════════════════╣
-║  Focus: API | LLM/AI | Mobile (Web excluded)           ║
-╚══════════════════════════════════════════════════════════╝
-
   📊 DATABASE STATUS
   ────────────────
   Active programs: 0
-  Recent changes (7d): 0
-  Scans (30d): 0
+  Recent changes (7d): 802
+  Scans (30d): 9
+
+  🔄 RECENT CHANGES (last 7 days)
+    [2026-06-14T01:30:14] Unknown: New Program
+    ...
 ```
 
-If you see this, **you're set up**. The database is empty because we haven't run a scan yet — that's normal.
+If you see this, **you're set up**. The database has data from the initial scan.
 
 ---
 
 ## Your First Scan
 
-### Option A: Full Scan (Recommended for Beginners)
+### Option A: Launch the TUI (Recommended)
 
-This uses both API discovery and web search to find programs:
+The Terminal UI gives you everything in one place:
 
 ```bash
-uv run python3 opportunity_finder.py --mode all
+uv run opportunity_finder.py
+```
+
+This opens an interactive interface with tabs for programs, strategy, changes, history, and search. Press `r` inside to start a scan.
+
+### Option B: Headless Scan
+
+Run a scan from the command line without the TUI:
+
+```bash
+uv run opportunity_finder.py --scan
 ```
 
 **What happens:**
 1. It tries to query platform APIs (if you've configured credentials — see below)
 2. Falls back to web search via SearXNG to find new opportunities
 3. Stores everything in a local SQLite database
-4. Shows you the results ranked by score
+4. Shows results ranked by score
 
-### Option B: API-Only Scan
-
-If you have API credentials configured:
+### Option C: Check Database Status
 
 ```bash
-uv run python3 opportunity_finder.py --mode api
-```
-
-### Option C: Web Search Only
-
-If you don't have API credentials yet:
-
-```bash
-uv run python3 opportunity_finder.py --mode search
-```
-
-### Filtering by Focus Area
-
-Want to see only LLM/AI security programs?
-
-```bash
-uv run python3 opportunity_finder.py -f llm
-```
-
-Or combine focus areas:
-
-```bash
-uv run python3 opportunity_finder.py -f api llm
-```
-
-Available focus areas: `api`, `llm`, `mobile`
-
-### Filtering by Platform
-
-Want to see only HackerOne programs?
-
-```bash
-uv run python3 opportunity_finder.py -p hackerone
-```
-
-Or combine platforms:
-
-```bash
-uv run python3 opportunity_finder.py -p intigriti bugcrowd
-```
-
-Available platforms: `hackerone`, `intigriti`, `bugcrowd`, `yeswehack`
-
-### Combining Filters
-
-HackerOne LLM programs only?
-
-```bash
-uv run python3 opportunity_finder.py -p hackerone -f llm
-```
-
-### Quiet Mode + Save to File
-
-Don't want log messages cluttering your screen and want results in a file:
-
-```bash
-uv run python3 opportunity_finder.py --mode all -q -o my_results.json
+uv run opportunity_finder.py --status
 ```
 
 ---
 
-## The Web Dashboard
+## The Terminal UI
 
-The web dashboard gives you a visual interface to explore everything. It's much easier than reading terminal output.
+The TUI is your main interface. It replaces the need for a web browser — everything runs right in your terminal.
 
-### Starting the Dashboard
+### Starting the TUI
 
 ```bash
-uv run python3 app.py --port 9080
+uv run opportunity_finder.py
 ```
 
-Then open your browser and go to: **http://127.0.0.1:9080**
+### Tabs (navigate with `Tab` / `Shift+Tab`)
 
-> **Why port 9080?** Port 8080 is often used by other tools (like SearXNG). If you don't have anything on 8080, use that instead — it's the default.
+#### 📊 All Programs
 
-### Dashboard Pages Explained
+The home tab. Shows:
+- **Ranked table** of all discovered programs sorted by score
+- Columns: Rank, Score (color-coded), Signals count, Program name, Platform, Competition level, Payout range
+- Status bar at bottom showing program count and last scan time
 
-#### 📊 Dashboard (`/`)
+#### 💡 Scoring Strategy
 
-The home page. Shows:
-- **5 stat cards** at the top: active programs, new this week, active events, changes (7d), scans (30d)
-- **Top Programs by Score**: ranked list of best opportunities on the left
-- **Recent Changes**: what's changed since your last scan on the right
-- **Focus Area Breakdown**: how many programs per category (API/LLM/Mobile)
-- **Quick Actions**: shortcut links to filtered views
+Visual breakdown of how scores are calculated:
+- **Scoring weights** shown as progress bars — see which factors matter most
+- Helps you understand why certain programs rank higher
 
-#### 🎯 Programs (`/programs`)
-
-Full list of all discovered programs with:
-- **Filter chips** at the top — click "🔌 API Security" or "HackerOne" to filter
-- **Search bar** on the right — type a program name to find it
-- **Table** showing: rank, program name + description, platform badge, focus area icons, max payout, temporal signals (NEW/SCOPE+/UP/EVENT), and score
-
-#### 🔄 Changes (`/changes`)
+#### 🔄 Change Tracking
 
 Log of everything that changed between scans:
-- **Time range filter**: 7d / 14d / 30d buttons at the top
-- **Grouped by change type**: New Programs, Scope Expansions, Bounty Increases, Events
-- Each entry shows which program changed and when
+- Columns: Timestamp, Program name, Change type (NEW/SCOPE+/UP/EVENT), Details
+- Shows what's new since your last scan
 
-#### 📈 Scan History (`/scans`)
+#### 📈 Scan History
 
 Records of every scan you've run:
-- Date/time, mode (API/SEARCH/ALL), programs found, new programs discovered, changes detected
+- Columns: Scan #, Timestamp, Programs found, Top score, Duration
 - Useful for seeing if your scans are finding more over time
 
-#### 💡 Strategy (`/strategy`)
+#### 🔍 Search Programs
 
-Where to focus your efforts:
-- **Hot Programs**: programs with active temporal signals (newly discovered, scope expanded, etc.) — these are your best bets right now
-- **By Platform**: cards showing programs grouped by HackerOne, Intigriti, Bugcrowd, YesWeHack
-- **By Focus Area**: cards showing programs grouped by API, LLM/AI, Mobile
+Interactive web search for discovering new programs:
+- **Input field** at the top — type a query and press Enter
+- Results table below showing matching programs with platform and URL
 
-### Dashboard CLI Options
+### Keybindings (always available)
 
-```bash
-# Default (port 8080)
-uv run python3 app.py
+| Key | Action | When to Use |
+|-----|--------|-------------|
+| `r` | Run full scan | Start a background scan without leaving the TUI |
+| `d` | Program details | Show detailed info for the selected program row |
+| `o` | Export CSV | Save current programs table to `bounty_results.csv` |
+| `s` | DB status | Print database statistics to terminal |
+| `q` | Quit | Exit the TUI |
 
-# Custom port
-uv run python3 app.py --port 9080
+### Navigation Tips
 
-# Debug mode (auto-reloads when you edit files — useful during development)
-uv run python3 app.py --debug
-
-# Bind to all interfaces (accessible from other devices on your network)
-uv run python3 app.py --host 0.0.0.0
-```
+- **Arrow keys** — Move up/down in tables
+- **Tab / Shift+Tab** — Switch between tabs
+- **Page Up / Page Down** — Scroll through long tables
+- **Home / End** — Jump to first/last row
 
 ---
 
@@ -329,14 +271,13 @@ These are **time-sensitive opportunities** that give you an edge:
 
 ### Reading a Program Entry
 
-Example from the terminal output:
+Example from the TUI table:
 
 ```
-#1 [HackerOne] Acme Corp API — Score: +18.5 🆕 NEW 📈 SCOPE+
-    Focus: 🔌 API Security | Payout: $25,000 | Competition: LOW
+#1  [green]18[/]  [magenta]3[/]  [cyan]Acme Corp API[/]  hackerone  LOW  $25,000
 ```
 
-Translation: *"This is the #1 ranked program on HackerOne. It's an API security target paying up to $25K. It was just discovered (NEW) and its scope expanded (SCOPE+), meaning there's fresh attack surface nobody has tested yet. Low competition means fewer hunters competing for bugs."*
+Translation: *"This is the #1 ranked program on HackerOne. It has a score of 18 (hot!), 3 temporal signals, and pays up to $25K with low competition."*
 
 ---
 
@@ -398,10 +339,10 @@ platforms:
 
 ### Step 3: Test It
 
-Run an API scan:
+Run a scan (headless or via TUI `r` keybinding):
 
 ```bash
-uv run python3 opportunity_finder.py --mode api
+uv run opportunity_finder.py --scan
 ```
 
 If credentials are correct, you'll see programs being discovered. If not, it will log a message like `Bugcrowd: credentials not configured, skipping`.
@@ -435,7 +376,7 @@ crontab -e
 Add this line:
 
 ```cron
-0 8 * * 1 cd /path/to/BoutyHunter && uv run python3 opportunity_finder.py --mode all 2>&1 | tee -a logs/scan_$(date +\%Y\%m\%d).log # BoutyHunter weekly scan
+0 8 * * 1 cd /path/to/BoutyHunter && uv run opportunity_finder.py --scan 2>&1 | tee -a logs/scan_$(date +\%Y\%m\%d).log # BoutyHunter weekly scan
 ```
 
 This means: **At minute 0, hour 8 (8 AM), every day of the month, every month, on Mondays** — run the full scan.
@@ -456,28 +397,24 @@ crontab -e   # delete the BoutyHunter line and save
 
 ## Every Command You Need to Know
 
-### CLI Scanner (`opportunity_finder.py`)
+### Main Entry Point (`opportunity_finder.py`)
 
 | What you want | Command |
 |---------------|---------|
-| Full scan (API + web search) | `uv run python3 opportunity_finder.py --mode all` |
-| API-only scan | `uv run python3 opportunity_finder.py --mode api` |
-| Web search only | `uv run python3 opportunity_finder.py --mode search` |
-| Filter by focus area | `uv run python3 opportunity_finder.py -f llm` |
-| Filter by platform | `uv run python3 opportunity_finder.py -p hackerone` |
-| Combine filters | `uv run python3 opportunity_finder.py -p intigriti -f api llm` |
-| Quiet mode (no logs) | `uv run python3 opportunity_finder.py --mode all -q` |
-| Save results to file | `uv run python3 opportunity_finder.py --mode all -o results.json` |
-| Check database status | `uv run python3 opportunity_finder.py --status` |
+| Launch TUI (interactive) | `uv run opportunity_finder.py` |
+| Run headless scan then exit | `uv run opportunity_finder.py --scan` |
+| Check database status | `uv run opportunity_finder.py --status` |
 
-### Web Dashboard (`app.py`)
+### Inside the TUI
 
-| What you want | Command |
-|---------------|---------|
-| Start dashboard (default port 8080) | `uv run python3 app.py` |
-| Custom port | `uv run python3 app.py --port 9080` |
-| Debug mode (auto-reload on changes) | `uv run python3 app.py --debug` |
-| Access from other devices | `uv run python3 app.py --host 0.0.0.0` |
+| What you want | Key |
+|---------------|-----|
+| Start a scan (background) | `r` |
+| View program details | `d` (on selected row) |
+| Export to CSV | `o` |
+| Print DB status | `s` |
+| Switch tabs | `Tab` / `Shift+Tab` |
+| Quit | `q` |
 
 ### General
 
@@ -501,23 +438,16 @@ You're probably running the script without `uv run`. Always use:
 python3 opportunity_finder.py
 
 # Right — uses uv's managed environment
-uv run python3 opportunity_finder.py
+uv run opportunity_finder.py
 ```
 
-### Web dashboard won't start (port already in use)
+### TUI stuck on "Loading..."
 
-Something else is using port 8080. Use a different port:
+This can happen if a database query fails silently. Try:
 
-```bash
-uv run python3 app.py --port 9080
-```
-
-Or find what's using the port and stop it:
-
-```bash
-lsof -i :8080    # shows what process uses port 8080
-kill <PID>       # kill that process
-```
+1. Check the terminal for error messages (the TUI may have crashed)
+2. Verify your database is intact: `uv run opportunity_finder.py --status`
+3. If DB is corrupted, delete and recreate: `rm bounty_hunter.db`
 
 ### "No programs found" after a scan
 
@@ -533,7 +463,7 @@ The database is created automatically on first run. If it gets corrupted, just d
 
 ```bash
 rm bounty_hunter.db
-uv run python3 opportunity_finder.py --mode all   # recreates the DB
+uv run opportunity_finder.py --scan   # recreates the DB
 ```
 
 > **Note:** This erases your scan history and change tracking data. Only do this if necessary.
@@ -585,8 +515,7 @@ export PATH="$HOME/.local/bin:$PATH"
 - [ ] Install Python 3.12+ and `uv`
 - [ ] Clone the repo: `git clone https://github.com/vl4dt/BoutyHunter.git && cd BoutyHunter`
 - [ ] Install deps: `uv sync`
-- [ ] Run first scan: `uv run python3 opportunity_finder.py --mode all`
-- [ ] Start dashboard: `uv run python3 app.py --port 9080` → open http://127.0.0.1:9080
+- [ ] Launch TUI: `uv run opportunity_finder.py` → press `r` to scan
 - [ ] (Optional) Add Bugcrowd API credentials to `config.yaml`
 - [ ] (Optional) Set up weekly cron: `./setup_cron.sh`
 

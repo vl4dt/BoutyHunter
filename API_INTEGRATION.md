@@ -141,18 +141,17 @@ The `PlatformClient` class orchestrates all three clients, merges results, and a
 ## Quick Start Commands
 
 ```bash
-# Full scan: API discovery + web search (works without credentials)
-python3 opportunity_finder.py
+# Launch the TUI (interactive terminal interface)
+uv run opportunity_finder.py
 
-# Only API discovery (requires credentials in config.yaml)
-python3 opportunity_finder.py --mode api
+# Run a headless scan then exit (API + web search, works without credentials)
+uv run opportunity_finder.py --scan
 
-# Only web search (no credentials needed)
-python3 opportunity_finder.py --mode search
+# Check database status
+uv run opportunity_finder.py --status
 
-# Filter by focus area and platform
-python3 opportunity_finder.py -p intigriti yeswehack -f api llm
-
-# Quiet mode, save to file
-python3 opportunity_finder.py -q -o my_results.json
+# Inside the TUI:
+#   r  — start a background scan
+#   d  — view details of selected program
+#   o  — export programs to CSV
 ```

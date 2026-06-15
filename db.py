@@ -93,7 +93,7 @@ def init_db():
     """Initialize the database schema if it doesn't exist."""
     with get_connection() as conn:
         conn.executescript(SCHEMA_SQL)
-    logger.info("Database initialized at %s", DB_FILE)
+    logger.debug("Database initialized at %s", DB_FILE)
 
 # ─── Program Operations ────────────────────────────────────────────────
 

@@ -8,6 +8,16 @@ from constants import FOCUS_AREAS, PLATFORMS, COMPETITION_SCORES
 
 logger = logging.getLogger("boutyhunter.scoring")
 
+# ─── Scoring Weights (for display in TUI) ──────────────────────
+
+SCORING_WEIGHTS: dict[str, float] = {
+    "triage_speed": 0.30,
+    "competition_level": 0.25,
+    "focus_area_match": 0.20,
+    "payout_potential": 0.15,
+    "scope_quality": 0.10,
+}
+
 # ─── Platform Lookup ──────────────────────────────────────────────
 
 def find_platform_key(url_or_name: str) -> str | None:
@@ -142,6 +152,67 @@ def _keyword_scope_check(description: str, scope_details: dict) -> dict[str, boo
 
 # ─── Scoring ──────────────────────────────────────────────────────
 
+def _estimate_researcher_pressure(program: dict) -> float:
+    """Estimate researcher/hacker competition pressure for a specific program.
+
+    Returns an adjustment (-2.5 to +2.5) applied on top of the platform baseline.
+    Negative = less competition than average, positive = more.
+    The Intigriti API doesn't expose researcher count directly, so we estimate from:
+      - Bounty amount ($0 VDPs attract fewer hunters)
+      - Program age (newer programs are less known)
+      - Scope size (larger scope attracts more researchers)
+    """
+    adjustment = 0.0
+
+    # Bounty signal: $0 max bounty → VDP → significantly less competition
+    max_payout = program.get("max_payout_usd", 0) or 0
+    if max_payout == 0:
+        adjustment -= 1.5  # VDPs have much less competition
+    elif max_payout < 500:
+        adjustment -= 0.8  # low bounty = moderate deterrent
+    elif max_payout > 10000:
+        adjustment += 1.2  # high bounty attracts many hunters
+    elif max_payout > 5000:
+        adjustment += 0.6
+
+    # Age signal: newer programs are less known → fewer researchers
+    first_seen = program.get("first_seen", "")
+    if first_seen:
+        try:
+            from datetime import datetime as _dt
+            age_days = (_dt.now() - _dt.fromisoformat(first_seen)).days
+            if age_days <= 7:
+                adjustment -= 1.5  # brand new, barely anyone knows
+            elif age_days <= 30:
+                adjustment -= 0.9
+            elif age_days <= 90:
+                adjustment -= 0.4
+            elif age_days > 365:
+                adjustment += 0.4  # well-known program
+        except (ValueError, TypeError):
+            pass
+
+    # Scope signal: larger scope attracts more researchers
+    scope_raw = program.get("scope_details", {})
+    if isinstance(scope_raw, str):
+        try:
+            import json as _json
+            scope_obj = _json.loads(scope_raw)
+        except Exception:
+            scope_obj = {}
+    else:
+        scope_obj = scope_raw or {}
+    asset_count = len(scope_obj.get("assets", []))
+    if asset_count > 20:
+        adjustment += 0.8
+    elif asset_count > 10:
+        adjustment += 0.4
+    elif asset_count <= 3:
+        adjustment -= 0.3  # tiny scope = fewer entry points
+
+    return round(max(-2.5, min(2.5, adjustment)), 1)
+
+
 def score_program(program: dict) -> tuple[float, list[str]]:
     """Score a program. Returns (score, breakdown_reasons).
 
@@ -159,13 +230,18 @@ def score_program(program: dict) -> tuple[float, list[str]]:
     # Competition penalty (lower competition = higher score)
     comp_level = platform["competition_level"]
     comp_score = COMPETITION_SCORES.get(comp_level, 5)
-    comp_bonus = -comp_score
+    
+    # Per-program researcher pressure estimate (-2.5 to +2.5 adjustment)
+    researcher_adjustment = _estimate_researcher_pressure(program)
+    total_comp_penalty = round(comp_score + researcher_adjustment, 1)
+    comp_bonus = -total_comp_penalty
     comp_labels = {
         "extreme": "EXTREME — many hunters competing", "high": "HIGH — crowded",
         "moderate": "MODERATE — some competition", "low": "LOW — fewer hunters",
         "very_low": "VERY LOW — almost no competition",
     }
-    reasons.append(f"Competition: {comp_labels.get(comp_level, comp_level)} → {comp_bonus:+.0f}")
+    adj_label = f" ({researcher_adjustment:+.1f})"
+    reasons.append(f"Competition: {comp_labels.get(comp_level, comp_level)}{adj_label} → {comp_bonus:+.1f}")
 
     # Triage speed bonus (faster triage = higher score)
     triage_days = platform["triage_speed_days"]
@@ -226,7 +302,7 @@ def score_program(program: dict) -> tuple[float, list[str]]:
             return base
         return round(base * FOCUS_BOUNTY_MISMATCH_REDUCTION, 1)
 
-    total = triage_bonus - comp_score + sum(
+    total = triage_bonus - total_comp_penalty + sum(
         _focus_contribution(a) for a in focus_areas if a in focus_bonus_map
     ) + payout_bonus
 

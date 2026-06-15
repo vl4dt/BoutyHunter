@@ -137,17 +137,21 @@ This is the hottest, least competitive area right now. Focus on:
 ## Tool Usage
 
 ```bash
-# Full scan across all platforms and focus areas
-python3 /home/vl4dt/Projects/BoutyHunter/opportunity_finder.py
+# Launch the TUI (interactive terminal interface)
+uv run opportunity_finder.py
 
-# Only API programs on Intigriti
-python3 /home/vl4dt/Projects/BoutyHunter/opportunity_finder.py -p intigriti -f api
+# Run a headless scan then exit
+uv run opportunity_finder.py --scan
 
-# LLM + API focus, save results to file
-python3 /home/vl4dt/Projects/BoutyHunter/opportunity_finder.py --focus llm api -o my_results.json
+# Check database status
+uv run opportunity_finder.py --status
 
-# HackerOne LLM programs only
-python3 /home/vl4dt/Projects/BoutyHunter/opportunity_finder.py -p hackerone -f llm
+# Inside the TUI:
+#   r  — start a background scan
+#   d  — view details of selected program
+#   o  — export programs to CSV
+#   Tab / Shift+Tab — switch tabs
+#   q  — quit
 
 # Set up weekly cron job (runs every Monday at 8am)
 ./setup_cron.sh

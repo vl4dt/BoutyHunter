@@ -1,0 +1,802 @@
+Rank,Program,Platform,Score,Focus Areas,Max Payout (USD)
+1,Intel®,intigriti,27.2,"[""api""]",100000
+2,Yahoo Bug Bounty,intigriti,25.8,"[""llm""]",15000
+3,Superdrug,intigriti,25.5,"[""llm""]",8500
+4,Torfs,intigriti,25.5,"[""llm""]",6500
+5,Watsons,intigriti,25.5,"[""llm""]",8500
+6,Marionnaud,intigriti,25.5,"[""llm""]",8500
+7,The Perfume Shop,intigriti,25.5,"[""llm""]",8500
+8,Kruidvat,intigriti,25.5,"[""llm""]",8500
+9,ICI PARIS XL,intigriti,25.5,"[""llm""]",8500
+10,Ninja Kiwi Games Bug Bounty program,intigriti,25.4,"[""llm""]",4125
+11,Newpharma,intigriti,25.4,"[""llm""]",5000
+12,TrafficJunky Bug Bounty Program,intigriti,25.4,"[""llm""]",4000
+13,Embark Studios,intigriti,25.4,"[""llm""]",4000
+14,Pornhub Bug Bounty Program,intigriti,25.4,"[""llm""]",5000
+15,Kinepolis Group,intigriti,25.4,"[""llm""]",5000
+16,Nutaku Bug Bounty Program,intigriti,25.4,"[""llm""]",4000
+17,InnoGames,intigriti,25.4,"[""llm""]",4500
+18,MyDirtyHobby Bug Bounty Program,intigriti,25.4,"[""llm""]",4000
+19,Allegro,intigriti,25.4,"[""llm""]",4000
+20,Brazzers Bug Bounty Program,intigriti,25.4,"[""llm""]",5000
+21,Intergamma,intigriti,25.4,"[""llm""]",5500
+22,Capture Our Flag,intigriti,25.3,"[""api""]",51337
+23,Belfius,intigriti,25.3,"[""api""]",7500
+24,Ubisoft Game Security BBP,intigriti,25.3,"[""llm""]",2500
+25,De Volkskrant,intigriti,25.3,"[""llm""]",2200
+26,Soundtrack Technologies,intigriti,25.3,"[""llm""]",3500
+27,Vinted - Bug Bounty Program,intigriti,25.3,"[""llm""]",2300
+28,Algemeen Dagblad,intigriti,25.3,"[""llm""]",2200
+29,VRT,intigriti,25.3,"[""llm""]",2000
+30,Coolblue,intigriti,25.3,"[""llm""]",2500
+31,Het Parool,intigriti,25.3,"[""llm""]",2200
+32,Libelle,intigriti,25.3,"[""llm""]",2200
+33,Het Laatste Nieuws,intigriti,25.3,"[""llm""]",2200
+34,Humo,intigriti,25.3,"[""llm""]",2200
+35,Webnode,intigriti,25.3,"[""llm""]",1750
+36,De Morgen,intigriti,25.3,"[""llm""]",2200
+37,Colruyt Group,intigriti,25.3,"[""llm""]",3500
+38,Axel Springer National Media & Tech,intigriti,25.3,"[""llm""]",2500
+39,VTM GO,intigriti,25.3,"[""llm""]",2200
+40,Colruyt Group Registered,intigriti,25.3,"[""llm""]",3500
+41,Too Good To Go - Marketplace,intigriti,25.3,"[""llm""]",3500
+42,WP Engine Bug Bounty,intigriti,25.3,"[""llm""]",2500
+43,Allekabels,intigriti,25.3,"[""llm""]",2250
+44,The Stepstone Group,intigriti,25.3,"[""llm""]",2500
+45,Intertoys,intigriti,25.3,"[""llm""]",3600
+46,Tweakers,intigriti,25.3,"[""llm""]",2200
+47,Trouw,intigriti,25.3,"[""llm""]",2200
+48,MAGNIFIC VDP,intigriti,25.2,"[""llm""]",0
+49,WP Engine VDP,intigriti,25.2,"[""llm""]",0
+50,OURA Vulnerability Disclosure Program,intigriti,25.2,"[""llm""]",0
+51,Mediahuis Corporate Domains,intigriti,25.2,"[""llm""]",1000
+52,DPG Media,intigriti,25.2,"[""llm""]",500
+53,Mediahuis Noord Domains,intigriti,25.2,"[""llm""]",1000
+54,MLB Vulnerability Disclosure Program,intigriti,25.2,"[""llm""]",0
+55,Axel Springer SE Vulnerability Disclosure Program,intigriti,25.2,"[""llm""]",0
+56,Zimmo,intigriti,25.2,"[""llm""]",1000
+57,Ubisoft Responsible Disclosure Program,intigriti,25.2,"[""llm""]",0
+58,Zabka Group Vulnerability Disclosure Program,intigriti,25.2,"[""llm""]",0
+59,Altera,intigriti,24.4,"[""api""]",30000
+60,AMD Product Security Bug Bounty Program,intigriti,24.4,"[""api""]",30000
+61,Arm,intigriti,24.0,"[""api""]",20000
+62,Trusted Firmware,intigriti,24.0,"[""api""]",20000
+63,NVIDIA Public Bug Bounty,intigriti,23.8,"[""api""]",15000
+64,Capital.com,intigriti,23.8,"[""api""]",15000
+65,Grafana Labs,intigriti,23.8,"[""api""]",15000
+66,BMW Group Automotive,intigriti,23.8,"[""api""]",15000
+67,Delen Private Bank,intigriti,23.8,"[""api""]",15000
+68,Dropbox Bug Bounty,intigriti,23.8,"[""api""]",15000
+69,Monzo Public Bug Bounty Program,intigriti,23.7,"[""api""]",12500
+70,"VMware Workstation, Fusion, and Tools",intigriti,23.7,"[""api""]",12000
+71,intigriti,intigriti,23.7,"[""api""]",13337
+72,VCF - VMware Cloud Director,intigriti,23.6,"[""api""]",10000
+73,Bank J.Van Breda & C°,intigriti,23.6,"[""api""]",10000
+74,VCF - vCenter Server,intigriti,23.6,"[""api""]",10000
+75,Kaufland Marketplace Bug Bounty,intigriti,23.6,"[""api""]",10000
+76,DigitalOcean,intigriti,23.6,"[""api""]",10000
+77,Visma,intigriti,23.5,"[""api""]",7500
+78,SBB - Swiss Federal Railways,intigriti,23.5,"[""api""]",6666
+79,Sqills S3 Passenger,intigriti,23.5,"[""api""]",7500
+80,Argenta,intigriti,23.5,"[""api""]",7500
+81,OneSpan Transaction Cloud Platform,intigriti,23.5,"[""api""]",7500
+82,Ideals Bug Bounty Program,intigriti,23.4,"[""api""]",5000
+83,Lansweeper Bug Bounty Program,intigriti,23.4,"[""api""]",5000
+84,SimScale,intigriti,23.4,"[""api""]",6000
+85,Port of Antwerp-Bruges,intigriti,23.4,"[""api""]",4500
+86,Doccle Bug Bounty program,intigriti,23.4,"[""api""]",4000
+87,Salto CloudWorks,intigriti,23.4,"[""api""]",4000
+88,MijnJessa,intigriti,23.4,"[""api""]",5000
+89,Uphold,intigriti,23.4,"[""api""]",6000
+90,UZ Leuven,intigriti,23.4,"[""api""]",5000
+91,Kahoot Bug Bounty Program,intigriti,23.4,"[""api""]",5000
+92,Skoda Auto Bug Bounty Program,intigriti,23.4,"[""api""]",5000
+93,SolarWinds Serv-U ,intigriti,23.4,"[""api""]",4000
+94,Exoscale Bug Bounty,intigriti,23.4,"[""api""]",5000
+95,Coveo Public Bug Bounty,intigriti,23.4,"[""api""]",5500
+96,Mobile Vikings,intigriti,23.4,"[""api""]",5000
+97,Port of Antwerp-Bruges VIP,intigriti,23.4,"[""api""]",5000
+98,Engel & Völkers,intigriti,23.4,"[""api""]",5000
+99,BMW Group,intigriti,23.4,"[""api""]",6000
+100,Personio,intigriti,23.4,"[""api""]",5000
+101,Probiller Bug Bounty Program,intigriti,23.4,"[""api""]",4000
+102,Water-Link,intigriti,23.4,"[""api""]",5000
+103,Toyota Motor Europe,intigriti,23.4,"[""api""]",4500
+104,SolarWinds SaaS,intigriti,23.4,"[""api""]",4000
+105,Veriff Bug Bounty,intigriti,23.4,"[""api""]",6000
+106,Rivian Bug Bounty,intigriti,23.4,"[""api""]",5000
+107,Cloudways by DigitalOcean,intigriti,23.4,"[""api""]",4000
+108,Nexo,intigriti,23.4,"[""api""]",4800
+109,UCB -External Perimeter,intigriti,23.4,"[""api""]",5000
+110,Venly,intigriti,23.4,"[""api""]",5000
+111,Redcare Pharmacy Sites,intigriti,23.4,"[""api""]",4000
+112,TrueLayer,intigriti,23.4,"[""api""]",6000
+113,Enviso Ticketing,intigriti,23.3,"[""api""]",3500
+114,Fing Bug Bounty Program,intigriti,23.3,"[""api""]",3500
+115,Wireless Logic,intigriti,23.3,"[""api""]",3000
+116,House of HR,intigriti,23.3,"[""api""]",2000
+117,RAMPF Bug Bounty,intigriti,23.3,"[""api""]",3500
+118,epowerhr Bug Bounty Program,intigriti,23.3,"[""api""]",2500
+119,RIPE NCC,intigriti,23.3,"[""api""]",2000
+120,My bpost app,intigriti,23.3,"[""api""]",3000
+121,Nexuzhealth,intigriti,23.3,"[""api""]",2500
+122,Dstny,intigriti,23.3,"[""api""]",2425
+123,Tomorrowland,intigriti,23.3,"[""api""]",2500
+124,Online enrollment for students Bug Bounty Program,intigriti,23.3,"[""api""]",2000
+125,Liferay DXP,intigriti,23.3,"[""api""]",2000
+126,Uitgeverij Deviant Bug Bounty,intigriti,23.3,"[""api""]",3000
+127,Telenet - Base - Wyre - Tadaam,intigriti,23.3,"[""api""]",2500
+128,Aikido Security: Bug Bounty Program,intigriti,23.3,"[""api""]",2500
+129,GlobalSign,intigriti,23.3,"[""api""]",3500
+130,Sqills,intigriti,23.3,"[""api""]",2500
+131,Bpost,intigriti,23.3,"[""api""]",1500
+132,PDQ bug bounty program,intigriti,23.3,"[""api""]",3500
+133,12Build Bug Bounty Program,intigriti,23.3,"[""api""]",3000
+134,Posti Bug Bounty ,intigriti,23.3,"[""api""]",2000
+135,ZOwonen,intigriti,23.3,"[""api""]",3000
+136,Admissions for Students,intigriti,23.3,"[""api""]",2500
+137,Voi Scooters,intigriti,23.3,"[""api""]",3500
+138,Odoo 19.0 Bug Bounty program,intigriti,23.3,"[""api""]",3000
+139,Salto Home Solutions,intigriti,23.3,"[""api""]",2000
+140,Housing Application (huisvestingsapp) Bug Bounty Program,intigriti,23.3,"[""api""]",2000
+141,Agentschap Wegen en Verkeer Bug Bounty,intigriti,23.3,"[""api""]",3750
+142,DataCamp,intigriti,23.3,"[""api""]",1500
+143,UZ Brussel,intigriti,23.3,"[""api""]",2500
+144,eHealth Hub VZN KUL,intigriti,23.3,"[""api""]",2000
+145,EURid,intigriti,23.3,"[""api""]",1500
+146,Here Technologies,intigriti,23.3,"[""api""]",2000
+147,Wolt,intigriti,23.3,"[""api""]",3500
+148,CM.com,intigriti,23.3,"[""api""]",3500
+149,Fortnox Bug Bounty Program,intigriti,23.3,"[""api""]",2000
+150,Canada Post - Responsible Disclosure Program,intigriti,23.2,"[""api""]",0
+151,VDP,intigriti,23.2,"[""api""]",0
+152,The Coca-Cola Company Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+153,Atolls Vulnerability Disclosure Program (VDP),intigriti,23.2,"[""api""]",0
+154,Cyber Security Coalition,intigriti,23.2,"[""api""]",0
+155,Social Deal,intigriti,23.2,"[""api""]",750
+156,DHL Group Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+157,Coveo VDP,intigriti,23.2,"[""api""]",0
+158,Donorbox VDP,intigriti,23.2,"[""api""]",0
+159,Bitvavo VDP,intigriti,23.2,"[""api""]",0
+160,Signicat Responsible Disclosure,intigriti,23.2,"[""api""]",0
+161,QC VDP,intigriti,23.2,"[""api""]",0
+162,Visma Responsible Disclosure,intigriti,23.2,"[""api""]",0
+163,KU Leuven Responsible Disclosure Program,intigriti,23.2,"[""api""]",0
+164,Qualified Responsible Disclosure Program,intigriti,23.2,"[""api""]",0
+165,RGF BE - VDP,intigriti,23.2,"[""api""]",0
+166,Cross Border Fines,intigriti,23.2,"[""api""]",0
+167,HRS Group VDP,intigriti,23.2,"[""api""]",0
+168,Bühler Group VDP,intigriti,23.2,"[""api""]",0
+169,Storebrand Responsible Disclosure,intigriti,23.2,"[""api""]",0
+170,Twago,intigriti,23.2,"[""api""]",0
+171,ING Responsible Disclosure,intigriti,23.2,"[""api""]",0
+172,Moralis VDP,intigriti,23.2,"[""api""]",0
+173,University of Basel VDP,intigriti,23.2,"[""api""]",0
+174,Nestlé VDP,intigriti,23.2,"[""api""]",0
+175,Grafana Labs - Vulnerability Disclosure Program (VDP),intigriti,23.2,"[""api""]",0
+176,Voi Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+177,Tempo-Team ,intigriti,23.2,"[""api""]",0
+178,Water-Link VDP,intigriti,23.2,"[""api""]",0
+179,Speakap Responsible Disclosure,intigriti,23.2,"[""api""]",0
+180,Citymesh Responsible Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+181,Liferay VDP,intigriti,23.2,"[""api""]",0
+182,Revolut VDP,intigriti,23.2,"[""api""]",0
+183,PeopleCert VDP,intigriti,23.2,"[""api""]",0
+184,DIGI Responsible Disclosure Program,intigriti,23.2,"[""api""]",0
+185,e-tracker,intigriti,23.2,"[""api""]",0
+186,Universitätsspital Zürich VDP,intigriti,23.2,"[""api""]",0
+187,Toast VDP,intigriti,23.2,"[""api""]",0
+188,Randstad,intigriti,23.2,"[""api""]",0
+189,Dropbox Vulnerability Disclosure Program ,intigriti,23.2,"[""api""]",0
+190,Exact Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+191,Kiwa Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+192,BMC,intigriti,23.2,"[""api""]",0
+193,Yacht,intigriti,23.2,"[""api""]",0
+194,Proof.com VDP,intigriti,23.2,"[""api""]",0
+195,NVIDIA Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+196,House of HR Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+197,9altitudes - Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+198,Nexuzhealth VDP,intigriti,23.2,"[""api""]",0
+199,Red Bull,intigriti,23.2,"[""api""]",0
+200,Anaconda Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+201,KBC - Responsible Disclosure,intigriti,23.2,"[""api""]",0
+202,Driessen Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+203,Orbia Responsible Disclosure,intigriti,23.2,"[""api""]",0
+204,Nexuzhealth Web PACS,intigriti,23.2,"[""api""]",1000
+205,Wärtsilä Vulnerability Disclosure Program,intigriti,23.2,"[""api""]",0
+206,Arbonia VDP program,intigriti,23.2,"[""api""]",0
+207,Vlerick Business School,intigriti,23.2,"[""api""]",0
+208,HackerOne,hackerone,11.2,"[""api""]",0
+209,Phabricator,hackerone,11.2,"[""api""]",0
+210,Ruby on Rails,hackerone,11.2,"[""api""]",0
+211,Django,hackerone,11.2,"[""api""]",0
+212,Cloudflare Public Bug Bounty,hackerone,11.2,"[""api""]",0
+213,Mavenlink,hackerone,11.2,"[""api""]",0
+214,WordPress,hackerone,11.2,"[""api""]",0
+215,Vimeo,hackerone,11.2,"[""api""]",0
+216,LinkedIn,hackerone,11.2,"[""api""]",0
+217,Priceline,hackerone,11.2,"[""api""]",0
+218,Concrete CMS,hackerone,11.2,"[""api""]",0
+219,X / xAI,hackerone,11.2,"[""api""]",0
+220,Basecamp,hackerone,11.2,"[""api""]",0
+221,Slack,hackerone,11.2,"[""api""]",0
+222,Tinder,hackerone,11.2,"[""api""]",0
+223,Publitas,hackerone,11.2,"[""api""]",0
+224,Coinbase,hackerone,11.2,"[""api""]",0
+225,Automattic,hackerone,11.2,"[""api""]",0
+226,AT&T,hackerone,11.2,"[""api""]",0
+227,Khan Academy,hackerone,11.2,"[""api""]",0
+228,IRCCloud,hackerone,11.2,"[""api""]",0
+229,Ian Dunn,hackerone,11.2,"[""api""]",0
+230,StopTheHacker,hackerone,11.2,"[""api""]",0
+231,Urban Dictionary,hackerone,11.2,"[""api""]",0
+232,FormAssembly,hackerone,11.2,"[""api""]",0
+233,GitLab,hackerone,11.2,"[""api""]",0
+234,ExpressionEngine,hackerone,11.2,"[""api""]",0
+235,DigitalSellz,hackerone,11.2,"[""api""]",0
+236,WP API,hackerone,11.2,"[""api""]",0
+237,CERT/CC,hackerone,11.2,"[""api""]",0
+238,Greenhouse.io,hackerone,11.2,"[""api""]",0
+239,Uber,hackerone,11.2,"[""api""]",0
+240,Adobe,hackerone,11.2,"[""api""]",0
+241,WordPoints,hackerone,11.2,"[""api""]",0
+242,GlassWire,hackerone,11.2,"[""api""]",0
+243,CoinMate.io,hackerone,11.2,"[""api""]",0
+244,Algolia,hackerone,11.2,"[""api""]",0
+245,Informatica,hackerone,11.2,"[""api""]",0
+246,Snapchat,hackerone,11.2,"[""api""]",0
+247,Yelp,hackerone,11.2,"[""api""]",0
+248,Scopely,hackerone,11.2,"[""api""]",0
+249,Mobile Vikings,hackerone,11.2,"[""api""]",0
+250,Imgur,hackerone,11.2,"[""api""]",0
+251,Ubiquiti Inc.,hackerone,11.2,"[""api""]",0
+252,Airtable,hackerone,11.2,"[""api""]",0
+253,Booking.com,hackerone,11.2,"[""api""]",0
+254,Airbnb,hackerone,11.2,"[""api""]",0
+255,KAYAK,hackerone,11.2,"[""api""]",0
+256,Moneybird,hackerone,11.2,"[""api""]",0
+257,Mapbox,hackerone,11.2,"[""api""]",0
+258,Shopify,hackerone,11.2,"[""api""]",0
+259,"Invision Power Services, Inc.",hackerone,11.2,"[""api""]",0
+260,Coursera,hackerone,11.2,"[""api""]",0
+261,Udemy,hackerone,11.2,"[""api""]",0
+262,Legal Robot,hackerone,11.2,"[""api""]",0
+263,Grab,hackerone,11.2,"[""api""]",0
+264,GoodRx,hackerone,11.2,"[""api""]",0
+265,Nokogiri,hackerone,11.2,"[""api""]",0
+266,Tor,hackerone,11.2,"[""api""]",0
+267,GitHub,hackerone,11.2,"[""api""]",0
+268,PayPal,hackerone,11.2,"[""api""]",0
+269,Matomo,hackerone,11.2,"[""api""]",0
+270,Badoo,hackerone,11.2,"[""api""]",0
+271,Trellix,hackerone,11.2,"[""api""]",0
+272,Starbucks,hackerone,11.2,"[""api""]",0
+273,Spotify,hackerone,11.2,"[""api""]",0
+274,IBM,hackerone,11.2,"[""api""]",0
+275,Rockstar Games,hackerone,11.2,"[""api""]",0
+276,LibSass,hackerone,11.2,"[""api""]",0
+277,CLEAR,hackerone,11.2,"[""api""]",0
+278,Revive Adserver,hackerone,11.2,"[""api""]",0
+279,Unikrn,hackerone,11.2,"[""api""]",0
+280,Deriv.com,hackerone,11.2,"[""api""]",0
+281,Eternal,hackerone,11.2,"[""api""]",0
+282,Wealthsimple,hackerone,11.2,"[""api""]",0
+283,KIWI.KI GmbH,hackerone,11.2,"[""api""]",0
+284,ownCloud,hackerone,11.2,"[""api""]",0
+285,Version Cake,hackerone,11.2,"[""api""]",0
+286,Home Bargains,hackerone,11.2,"[""api""]",0
+287,Quora,hackerone,11.2,"[""api""]",0
+288,CodeIgniter,hackerone,11.2,"[""api""]",0
+289,Equifax-vdp,hackerone,11.2,"[""api""]",0
+290,Best Buy,hackerone,11.2,"[""api""]",0
+291,Goldman Sachs,hackerone,11.2,"[""api""]",0
+292,"Merck & Co., Inc., Rahway, NJ, USA",hackerone,11.2,"[""api""]",0
+293,FetLife,hackerone,11.2,"[""api""]",0
+294,Bime,hackerone,11.2,"[""api""]",0
+295,General Motors,hackerone,11.2,"[""api""]",0
+296,Ruby,hackerone,11.2,"[""api""]",0
+297,Monero,hackerone,11.2,"[""api""]",0
+298,Hyatt Hotels,hackerone,11.2,"[""api""]",0
+299,Flipkart,hackerone,11.2,"[""api""]",0
+300,RubyGems,hackerone,11.2,"[""api""]",0
+301,Paragon Initiative Enterprises,hackerone,11.2,"[""api""]",0
+302,Kiwi.com,hackerone,11.2,"[""api""]",0
+303,bitaccess,hackerone,11.2,"[""api""]",0
+304,MariaDB,hackerone,11.2,"[""api""]",0
+305,MainWP,hackerone,11.2,"[""api""]",0
+306,phpBB,hackerone,11.2,"[""api""]",0
+307,Dyson,hackerone,11.2,"[""api""]",0
+308,Aspen,hackerone,11.2,"[""api""]",0
+309,DuckDuckGo,hackerone,11.2,"[""api""]",0
+310,WebSummit,hackerone,11.2,"[""api""]",0
+311,Helium,hackerone,11.2,"[""api""]",0
+312,Drugs.com,hackerone,11.2,"[""api""]",0
+313,"OWOX, Inc.",hackerone,11.2,"[""api""]",0
+314,FantasyTote,hackerone,11.2,"[""api""]",0
+315,EXNESS,hackerone,11.2,"[""api""]",0
+316,Pushwoosh,hackerone,11.2,"[""api""]",0
+317,Files.com,hackerone,11.2,"[""api""]",0
+318,Nextcloud,hackerone,11.2,"[""api""]",0
+319,Python Cryptographic Authority,hackerone,11.2,"[""api""]",0
+320,LY Corporation,hackerone,11.2,"[""api""]",0
+321,SecNews,hackerone,11.2,"[""api""]",0
+322,Acronis,hackerone,11.2,"[""api""]",0
+323,GoCD,hackerone,11.2,"[""api""]",0
+324,Hiro,hackerone,11.2,"[""api""]",0
+325,Localize,hackerone,11.2,"[""api""]",0
+326,Toyota,hackerone,11.2,"[""api""]",0
+327,PortSwigger Web Security,hackerone,11.2,"[""api""]",0
+328,Plaid,hackerone,11.2,"[""api""]",0
+329,Cornershop,hackerone,11.2,"[""api""]",0
+330,shopify-scripts,hackerone,11.2,"[""api""]",0
+331,Brave Software,hackerone,11.2,"[""api""]",0
+332,Semrush,hackerone,11.2,"[""api""]",0
+333,U.S. Dept Of Defense,hackerone,11.2,"[""api""]",0
+334,Xiaomi,hackerone,11.2,"[""api""]",0
+335,Disclosure Assistance,hackerone,11.2,"[""api""]",0
+336,Lyst,hackerone,11.2,"[""api""]",0
+337,Enjin,hackerone,11.2,"[""api""]",0
+338,Alvosec,hackerone,11.2,"[""api""]",0
+339,Sony,hackerone,11.2,"[""api""]",0
+340,Nintendo,hackerone,11.2,"[""api""]",0
+341,MapsMarker.com e.U.,hackerone,11.2,"[""api""]",0
+342,Nutanix,hackerone,11.2,"[""api""]",0
+343,Discourse,hackerone,11.2,"[""api""]",0
+344,Nord Security,hackerone,11.2,"[""api""]",0
+345,RBKmoney,hackerone,11.2,"[""api""]",0
+346,Oportun,hackerone,11.2,"[""api""]",0
+347,Homebrew,hackerone,11.2,"[""api""]",0
+348,Weblate,hackerone,11.2,"[""api""]",0
+349,Roblox,hackerone,11.2,"[""api""]",0
+350,Rocket.Chat,hackerone,11.2,"[""api""]",0
+351,Autodesk,hackerone,11.2,"[""api""]",0
+352,Teradici,hackerone,11.2,"[""api""]",0
+353,Stellar.org,hackerone,11.2,"[""api""]",0
+354,Parrot Sec,hackerone,11.2,"[""api""]",0
+355,Bitwarden,hackerone,11.2,"[""api""]",0
+356,Omise,hackerone,11.2,"[""api""]",0
+357,WINK,hackerone,11.2,"[""api""]",0
+358,Bumble,hackerone,11.2,"[""api""]",0
+359,Infogram,hackerone,11.2,"[""api""]",0
+360,Yoti,hackerone,11.2,"[""api""]",0
+361,WakaTime,hackerone,11.2,"[""api""]",0
+362,delight.im,hackerone,11.2,"[""api""]",0
+363,Malwarebytes,hackerone,11.2,"[""api""]",0
+364,Upserve ,hackerone,11.2,"[""api""]",0
+365,Linux Foundation Decentralized Trust,hackerone,11.2,"[""api""]",0
+366,Superhuman (formerly Grammarly),hackerone,11.2,"[""api""]",0
+367,UserTesting,hackerone,11.2,"[""api""]",0
+368,Streak,hackerone,11.2,"[""api""]",0
+369,Kartpay,hackerone,11.2,"[""api""]",0
+370,Netlify,hackerone,11.2,"[""api""]",0
+371,Node.js,hackerone,11.2,"[""api""]",0
+372,Deconf,hackerone,11.2,"[""api""]",0
+373,Epic Games,hackerone,11.2,"[""api""]",0
+374,Valve,hackerone,11.2,"[""api""]",0
+375,Elastic,hackerone,11.2,"[""api""]",0
+376,Fig,hackerone,11.2,"[""api""]",0
+377,Smule,hackerone,11.2,"[""api""]",0
+378,BitMEX,hackerone,11.2,"[""api""]",0
+379,Ed,hackerone,11.2,"[""api""]",0
+380,JamieWeb,hackerone,11.2,"[""api""]",0
+381,Flutter UK&I,hackerone,11.2,"[""api""]",0
+382,Databricks,hackerone,11.2,"[""api""]",0
+383,Cosmos,hackerone,11.2,"[""api""]",0
+384,"Coalition, Inc.",hackerone,11.2,"[""api""]",0
+385,Affirm,hackerone,11.2,"[""api""]",0
+386,Crowdstrike,hackerone,11.2,"[""api""]",0
+387,Ping Identity,hackerone,11.2,"[""api""]",0
+388,passhash,hackerone,11.2,"[""api""]",0
+389,Y Combinator,hackerone,11.2,"[""api""]",0
+390,RATELIMITED,hackerone,11.2,"[""api""]",0
+391,Crypto.com,hackerone,11.2,"[""api""]",0
+392,Liberapay,hackerone,11.2,"[""api""]",0
+393,pixiv,hackerone,11.2,"[""api""]",0
+394,arkadiyt-projects,hackerone,11.2,"[""api""]",0
+395,S-Pankki,hackerone,11.2,"[""api""]",0
+396,Hanno's projects,hackerone,11.2,"[""api""]",0
+397,Chaturbate,hackerone,11.2,"[""api""]",0
+398,CFP Time,hackerone,11.2,"[""api""]",0
+399,Marriott Bug Bounty Program,hackerone,11.2,"[""api""]",0
+400,NISC-VDP,hackerone,11.2,"[""api""]",0
+401,Chainlink,hackerone,11.2,"[""api""]",0
+402,ESLint,hackerone,11.2,"[""api""]",0
+403,Remitly,hackerone,11.2,"[""api""]",0
+404,Logitech,hackerone,11.2,"[""api""]",0
+405,Flickr,hackerone,11.2,"[""api""]",0
+406,DefectDojo,hackerone,11.2,"[""api""]",0
+407,Expedia Group VDP,hackerone,11.2,"[""api""]",0
+408,MercadoLibre,hackerone,11.2,"[""api""]",0
+409,Credit Karma,hackerone,11.2,"[""api""]",0
+410,Urban Company,hackerone,11.2,"[""api""]",0
+411,Expedia Group Bug Bounty,hackerone,11.2,"[""api""]",0
+412,Sweatco Ltd,hackerone,11.2,"[""api""]",0
+413,FanDuel,hackerone,11.2,"[""api""]",0
+414,Insulet Corporation,hackerone,11.2,"[""api""]",0
+415,eToro BBP,hackerone,11.2,"[""api""]",0
+416,Front,hackerone,11.2,"[""api""]",0
+417,Central Security Project,hackerone,11.2,"[""api""]",0
+418,Instacart,hackerone,11.2,"[""api""]",0
+419,Remitano,hackerone,11.2,"[""api""]",0
+420,curl,hackerone,11.2,"[""api""]",0
+421,Reddit,hackerone,11.2,"[""api""]",0
+422,Ford,hackerone,11.2,"[""api""]",0
+423,Capital One,hackerone,11.2,"[""api""]",0
+424,FileZilla,hackerone,11.2,"[""api""]",0
+425,VLC (European Commission - DIGIT),hackerone,11.2,"[""api""]",0
+426,PuTTY (European Commission - DIGIT),hackerone,11.2,"[""api""]",0
+427,FileZilla (European Commission - DIGIT),hackerone,11.2,"[""api""]",0
+428,Apache Kafka (European Commission - DIGIT),hackerone,11.2,"[""api""]",0
+429,Via,hackerone,11.2,"[""api""]",0
+430,Early Warning,hackerone,11.2,"[""api""]",0
+431,Endless Group,hackerone,11.2,"[""api""]",0
+432,Spell,hackerone,11.2,"[""api""]",0
+433,Starling Bank VDP,hackerone,11.2,"[""api""]",0
+434,ImpressCMS,hackerone,11.2,"[""api""]",0
+435,Midpoint (European Commission - DIGIT),hackerone,11.2,"[""api""]",0
+436,Kubernetes,hackerone,11.2,"[""api""]",0
+437,ForeScout Technologies,hackerone,11.2,"[""api""]",0
+438,Dynatrace,hackerone,11.2,"[""api""]",0
+439,GoCardless Bug Bounty Program,hackerone,11.2,"[""api""]",0
+440,Consensys,hackerone,11.2,"[""api""]",0
+441,Raivo,hackerone,11.2,"[""api""]",0
+442,Replyify,hackerone,11.2,"[""api""]",0
+443,Mailtime Technology Inc.,hackerone,11.2,"[""api""]",0
+444,Worklytics,hackerone,11.2,"[""api""]",0
+445,Amitree Inc,hackerone,11.2,"[""api""]",0
+446,Lark Technologies,hackerone,11.2,"[""api""]",0
+447,Solidus,hackerone,11.2,"[""api""]",0
+448,AODocs,hackerone,11.2,"[""api""]",0
+449,KeyBank,hackerone,11.2,"[""api""]",0
+450,Top Echelon Software,hackerone,11.2,"[""api""]",0
+451,People Interactive,hackerone,11.2,"[""api""]",0
+452,Nuri,hackerone,11.2,"[""api""]",0
+453,CoinSpot,hackerone,11.2,"[""api""]",0
+454,Panther Labs,hackerone,11.2,"[""api""]",0
+455,MTN Group,hackerone,11.2,"[""api""]",0
+456,InvestNext,hackerone,11.2,"[""api""]",0
+457,UpHabit,hackerone,11.2,"[""api""]",0
+458,Palo Alto Software,hackerone,11.2,"[""api""]",0
+459,Stripo Inc,hackerone,11.2,"[""api""]",0
+460,Overloop,hackerone,11.2,"[""api""]",0
+461,JNJ Mobile,hackerone,11.2,"[""api""]",0
+462,Copper,hackerone,11.2,"[""api""]",0
+463,Oasis Protocol Foundation,hackerone,11.2,"[""api""]",0
+464,Thnks,hackerone,11.2,"[""api""]",0
+465,MobiSystems Ltd.,hackerone,11.2,"[""api""]",0
+466,Gmelius,hackerone,11.2,"[""api""]",0
+467,CompanyHub,hackerone,11.2,"[""api""]",0
+468,Exodus,hackerone,11.2,"[""api""]",0
+469,Thomson Reuters,hackerone,11.2,"[""api""]",0
+470,HCL Software Inc.,hackerone,11.2,"[""api""]",0
+471,Amazon Vulnerability Research Program,hackerone,11.2,"[""api""]",0
+472,lemlist,hackerone,11.2,"[""api""]",0
+473,Picsart,hackerone,11.2,"[""api""]",0
+474,Truecaller ,hackerone,11.2,"[""api""]",0
+475,USPS - United States Postal Service,hackerone,11.2,"[""api""]",0
+476,Earny,hackerone,11.2,"[""api""]",0
+477,Evernote,hackerone,11.2,"[""api""]",0
+478,Chorus,hackerone,11.2,"[""api""]",0
+479,PUBG,hackerone,11.2,"[""api""]",0
+480,Myndr,hackerone,11.2,"[""api""]",0
+481,PlayStation,hackerone,11.2,"[""api""]",0
+482,RGhost,hackerone,11.2,"[""api""]",0
+483,SKALE Network,hackerone,11.2,"[""api""]",0
+484,Simple Poll,hackerone,11.2,"[""api""]",0
+485,Standard Notes,hackerone,11.2,"[""api""]",0
+486,hostinger ,hackerone,11.2,"[""api""]",0
+487,Aiven Ltd,hackerone,11.2,"[""api""]",0
+488,TD Bank Group,hackerone,11.2,"[""api""]",0
+489,"Faraday, Inc.",hackerone,11.2,"[""api""]",0
+490,R3,hackerone,11.2,"[""api""]",0
+491,BTFS,hackerone,11.2,"[""api""]",0
+492,Navient Solutions LLC,hackerone,11.2,"[""api""]",0
+493,Staging.every.org,hackerone,11.2,"[""api""]",0
+494,Cirrus Insight,hackerone,11.2,"[""api""]",0
+495,Gener8,hackerone,11.2,"[""api""]",0
+496,Flexport VDP,hackerone,11.2,"[""api""]",0
+497,Cedars-Sinai,hackerone,11.2,"[""api""]",0
+498,LogSnitch,hackerone,11.2,"[""api""]",0
+499,SHEIN,hackerone,11.2,"[""api""]",0
+500,OpenMage,hackerone,11.2,"[""api""]",0
+501,Alibaba BBP,hackerone,11.2,"[""api""]",0
+502,UPS VDP,hackerone,11.2,"[""api""]",0
+503,Cognizant,hackerone,11.2,"[""api""]",0
+504,h1-ctf,hackerone,11.2,"[""api""]",0
+505,N45HT,hackerone,11.2,"[""api""]",0
+506,Shutterfly VDP,hackerone,11.2,"[""api""]",0
+507,Courier,hackerone,11.2,"[""api""]",0
+508,Insightly,hackerone,11.2,"[""api""]",0
+509,Lichess,hackerone,11.2,"[""api""]",0
+510,Mendix,hackerone,11.2,"[""api""]",0
+511,CS Money,hackerone,11.2,"[""api""]",0
+512,Vendasta,hackerone,11.2,"[""api""]",0
+513,Figma,hackerone,11.2,"[""api""]",0
+514,LaunchDarkly,hackerone,11.2,"[""api""]",0
+515,Zebra VDP,hackerone,11.2,"[""api""]",0
+516,BlackRock,hackerone,11.2,"[""api""]",0
+517,FINRA Response,hackerone,11.2,"[""api""]",0
+518,Polygon Technology,hackerone,11.2,"[""api""]",0
+519,Callsign,hackerone,11.2,"[""api""]",0
+520, Esteé  Lauder,hackerone,11.2,"[""api""]",0
+521,Rebellion Defense,hackerone,11.2,"[""api""]",0
+522,AIG,hackerone,11.2,"[""api""]",0
+523,Dropcontact,hackerone,11.2,"[""api""]",0
+524,TikTok,hackerone,11.2,"[""api""]",0
+525,John Deere,hackerone,11.2,"[""api""]",0
+526,8x8,hackerone,11.2,"[""api""]",0
+527,Hud App,hackerone,11.2,"[""api""]",0
+528,CBRE,hackerone,11.2,"[""api""]",0
+529,Blue Apron (Wonder Group) VDP,hackerone,11.2,"[""api""]",0
+530,Freshworks ,hackerone,11.2,"[""api""]",0
+531,Ohio Secretary of State,hackerone,11.2,"[""api""]",0
+532,Anywhere Real Estate,hackerone,11.2,"[""api""]",0
+533,Traffic Factory,hackerone,11.2,"[""api""]",0
+534,XVIDEOS,hackerone,11.2,"[""api""]",0
+535,U.S. General Services Administration,hackerone,11.2,"[""api""]",0
+536,Mars,hackerone,11.2,"[""api""]",0
+537,GSA Bounty,hackerone,11.2,"[""api""]",0
+538,Cloud Software Group,hackerone,11.2,"[""api""]",0
+539,Grindr,hackerone,11.2,"[""api""]",0
+540,eMoney Advisor,hackerone,11.2,"[""api""]",0
+541,Gymshark,hackerone,11.2,"[""api""]",0
+542,Doppler,hackerone,11.2,"[""api""]",0
+543,Judge.me ,hackerone,11.2,"[""api""]",0
+544,On ,hackerone,11.2,"[""api""]",0
+545,Stripe,hackerone,11.2,"[""api""]",0
+546,Paystack Vulnerability Disclosure,hackerone,11.2,"[""api""]",0
+547,Costco,hackerone,11.2,"[""api""]",0
+548,Fiserv,hackerone,11.2,"[""api""]",0
+549,Pfizer,hackerone,11.2,"[""api""]",0
+550,HYPR,hackerone,11.2,"[""api""]",0
+551,Payoneer,hackerone,11.2,"[""api""]",0
+552,WHO COVID-19 Mobile App,hackerone,11.2,"[""api""]",0
+553,FanDuel Response,hackerone,11.2,"[""api""]",0
+554,Capital One Bug Bounty,hackerone,11.2,"[""api""]",0
+555,JetBlue,hackerone,11.2,"[""api""]",0
+556,Glovo,hackerone,11.2,"[""api""]",0
+557,Global Payments,hackerone,11.2,"[""api""]",0
+558,DIB-VDP,hackerone,11.2,"[""api""]",0
+559,M&T Bank Vulnerability Disclosure,hackerone,11.2,"[""api""]",0
+560,Compass,hackerone,11.2,"[""api""]",0
+561,Trendyol,hackerone,11.2,"[""api""]",0
+562,Fastify,hackerone,11.2,"[""api""]",0
+563,Vodafone,hackerone,11.2,"[""api""]",0
+564,MCUboot,hackerone,11.2,"[""api""]",0
+565,Beiersdorf,hackerone,11.2,"[""api""]",0
+566,Playtika,hackerone,11.2,"[""api""]",0
+567,SMTP2GO BBP,hackerone,11.2,"[""api""]",0
+568,KHealth,hackerone,11.2,"[""api""]",0
+569,UPchieve,hackerone,11.2,"[""api""]",0
+570,Nominet,hackerone,11.2,"[""api""]",0
+571,Zurich Insurance,hackerone,11.2,"[""api""]",0
+572,LATAM Airlines,hackerone,11.2,"[""api""]",0
+573,U.S. Department of State,hackerone,11.2,"[""api""]",0
+574,Whatnot,hackerone,11.2,"[""api""]",0
+575,Zooplus,hackerone,11.2,"[""api""]",0
+576,Krisp,hackerone,11.2,"[""api""]",0
+577,Particle Health VDP,hackerone,11.2,"[""api""]",0
+578,ServiceNow Disclosure,hackerone,11.2,"[""api""]",0
+579,Tesco,hackerone,11.2,"[""api""]",0
+580,Keurig Dr Pepper,hackerone,11.2,"[""api""]",0
+581,Newegg,hackerone,11.2,"[""api""]",0
+582,Octopus Energy Group,hackerone,11.2,"[""api""]",0
+583,Hy-Vee,hackerone,11.2,"[""api""]",0
+584,KOHO,hackerone,11.2,"[""api""]",0
+585,SEGA,hackerone,11.2,"[""api""]",0
+586,Fastly VDP,hackerone,11.2,"[""api""]",0
+587,Tenable,hackerone,11.2,"[""api""]",0
+588,Planet Labs,hackerone,11.2,"[""api""]",0
+589,OANDA,hackerone,11.2,"[""api""]",0
+590,Razorpay,hackerone,11.2,"[""api""]",0
+591,Internet Bug Bounty,hackerone,11.2,"[""api""]",0
+592,Caterpillar,hackerone,11.2,"[""api""]",0
+593,Blend Labs,hackerone,11.2,"[""api""]",0
+594,APNIC,hackerone,11.2,"[""api""]",0
+595,PagerDuty,hackerone,11.2,"[""api""]",0
+596,Redis VDP,hackerone,11.2,"[""api""]",0
+597,MoonPay ,hackerone,11.2,"[""api""]",0
+598,Veeam,hackerone,11.2,"[""api""]",0
+599,GoDaddy VDP,hackerone,11.2,"[""api""]",0
+600,Clarivate,hackerone,11.2,"[""api""]",0
+601,Inspectorio,hackerone,11.2,"[""api""]",0
+602,The Walt Disney Company,hackerone,11.2,"[""api""]",0
+603,Divvy Homes,hackerone,11.2,"[""api""]",0
+604,Palantir Public,hackerone,11.2,"[""api""]",0
+605,Mondelēz International,hackerone,11.2,"[""api""]",0
+606,Amazon Vulnerability Research Program - Devices,hackerone,11.2,"[""api""]",0
+607,Fresenius,hackerone,11.2,"[""api""]",0
+608,Wells Fargo Bounty,hackerone,11.2,"[""api""]",0
+609,Agoric,hackerone,11.2,"[""api""]",0
+610,Wickr,hackerone,11.2,"[""api""]",0
+611,Allegion,hackerone,11.2,"[""api""]",0
+612,Hilton,hackerone,11.2,"[""api""]",0
+613,Moov,hackerone,11.2,"[""api""]",0
+614,SideFX,hackerone,11.2,"[""api""]",0
+615,Uniti,hackerone,11.2,"[""api""]",0
+616,MongoDB,hackerone,11.2,"[""api""]",0
+617,Sorare,hackerone,11.2,"[""api""]",0
+618,Ripio,hackerone,11.2,"[""api""]",0
+619,Alohi,hackerone,11.2,"[""api""]",0
+620,Fidelity,hackerone,11.2,"[""api""]",0
+621,Ro,hackerone,11.2,"[""api""]",0
+622,Deribit,hackerone,11.2,"[""api""]",0
+623,Prudential Financial,hackerone,11.2,"[""api""]",0
+624,MetaMask,hackerone,11.2,"[""api""]",0
+625,FloQast,hackerone,11.2,"[""api""]",0
+626,Render,hackerone,11.2,"[""api""]",0
+627,Monarch Money,hackerone,11.2,"[""api""]",0
+628,M-Pesa Africa Limited,hackerone,11.2,"[""api""]",0
+629,Avalara,hackerone,11.2,"[""api""]",0
+630,Daimler Truck,hackerone,11.2,"[""api""]",0
+631,ResMed,hackerone,11.2,"[""api""]",0
+632,Canada Goose Inc.,hackerone,11.2,"[""api""]",0
+633,City of Los Angeles,hackerone,11.2,"[""api""]",0
+634,Fireblocks,hackerone,11.2,"[""api""]",0
+635,Modern Treasury,hackerone,11.2,"[""api""]",0
+636,Dynamic Labs,hackerone,11.2,"[""api""]",0
+637,"Notion Labs, Inc.",hackerone,11.2,"[""api""]",0
+638,"WisdomTree, Inc.",hackerone,11.2,"[""api""]",0
+639,"ProductBoard, Inc.",hackerone,11.2,"[""api""]",0
+640,Yuga Labs,hackerone,11.2,"[""api""]",0
+641,KKR-VDP,hackerone,11.2,"[""api""]",0
+642,Abercrombie & Fitch Management Co.,hackerone,11.2,"[""api""]",0
+643,ABB Information Systems Ltd,hackerone,11.2,"[""api""]",0
+644,Zabbix,hackerone,11.2,"[""api""]",0
+645,Fifth Third Bank VDP,hackerone,11.2,"[""api""]",0
+646,Arkose Labs,hackerone,11.2,"[""api""]",0
+647,Mergify,hackerone,11.2,"[""api""]",0
+648,Coinhako,hackerone,11.2,"[""api""]",0
+649,REI BBP,hackerone,11.2,"[""api""]",0
+650,REI VDP,hackerone,11.2,"[""api""]",0
+651,Sheer,hackerone,11.2,"[""api""]",0
+652,ZeroBounce,hackerone,11.2,"[""api""]",0
+653,Frontegg,hackerone,11.2,"[""api""]",0
+654,ALSCO,hackerone,11.2,"[""api""]",0
+655,inDrive,hackerone,11.2,"[""api""]",0
+656,Intuit,hackerone,11.2,"[""api""]",0
+657,Vodafone Oman,hackerone,11.2,"[""api""]",0
+658,ONE ZERO VDP,hackerone,11.2,"[""api""]",0
+659,Boozt Fashion AB,hackerone,11.2,"[""api""]",0
+660,Magic Eden,hackerone,11.2,"[""api""]",0
+661,Greenfly,hackerone,11.2,"[""api""]",0
+662,PornBox,hackerone,11.2,"[""api""]",0
+663,ABN AMRO Bank VDP,hackerone,11.2,"[""api""]",0
+664,Superbet,hackerone,11.2,"[""api""]",0
+665,OKG,hackerone,11.2,"[""api""]",0
+666,Redox,hackerone,11.2,"[""api""]",0
+667,TRON DAO,hackerone,11.2,"[""api""]",0
+668,Stripchat,hackerone,11.2,"[""api""]",0
+669,Mozilla,hackerone,11.2,"[""api""]",0
+670,Fertitta Entertainment,hackerone,11.2,"[""api""]",0
+671,Truist Financial,hackerone,11.2,"[""api""]",0
+672,eero,hackerone,11.2,"[""api""]",0
+673,eufy Security,hackerone,11.2,"[""api""]",0
+674,Brightspeed,hackerone,11.2,"[""api""]",0
+675,SIX Group,hackerone,11.2,"[""api""]",0
+676,Ring,hackerone,11.2,"[""api""]",0
+677,Tools for Humanity,hackerone,11.2,"[""api""]",0
+678,Alshaya,hackerone,11.2,"[""api""]",0
+679,Visa,hackerone,11.2,"[""api""]",0
+680,AboitizPower,hackerone,11.2,"[""api""]",0
+681,OakNorth Bank,hackerone,11.2,"[""api""]",0
+682,Aven (Response),hackerone,11.2,"[""api""]",0
+683,Bykea,hackerone,11.2,"[""api""]",0
+684,Aon,hackerone,11.2,"[""api""]",0
+685,Lightspark BBP,hackerone,11.2,"[""api""]",0
+686,Fireblocks MPC,hackerone,11.2,"[""api""]",0
+687,Leather Wallet,hackerone,11.2,"[""api""]",0
+688,Inditex,hackerone,11.2,"[""api""]",0
+689,Trip.com,hackerone,11.2,"[""api""]",0
+690,Anthropic,hackerone,11.2,"[""api""]",0
+691,TransUnion LLC,hackerone,11.2,"[""api""]",0
+692,Bybit Fintech Ltd,hackerone,11.2,"[""api""]",0
+693,"Vectra AI, Inc. (Response)",hackerone,11.2,"[""api""]",0
+694,3CX,hackerone,11.2,"[""api""]",0
+695,Aeromexico VDP,hackerone,11.2,"[""api""]",0
+696,Audible,hackerone,11.2,"[""api""]",0
+697,Privy (Bounty),hackerone,11.2,"[""api""]",0
+698,23andMe Bug Bounty,hackerone,11.2,"[""api""]",0
+699,Temu,hackerone,11.2,"[""api""]",0
+700,DailyPay VDP,hackerone,11.2,"[""api""]",0
+701,Banco BMG VDP,hackerone,11.2,"[""api""]",0
+702,Netflix,hackerone,11.2,"[""api""]",0
+703,WellHive,hackerone,11.2,"[""api""]",0
+704,Corebridge Financial,hackerone,11.2,"[""api""]",0
+705,Unico IDtech,hackerone,11.2,"[""api""]",0
+706,Inter & Co. VDP,hackerone,11.2,"[""api""]",0
+707,Chia Network,hackerone,11.2,"[""api""]",0
+708,Lowe's Companies VDP,hackerone,11.2,"[""api""]",0
+709,SingleStore,hackerone,11.2,"[""api""]",0
+710,Nimiq,hackerone,11.2,"[""api""]",0
+711,TomTom,hackerone,11.2,"[""api""]",0
+712,ION Group,hackerone,11.2,"[""api""]",0
+713,Wallet on Telegram,hackerone,11.2,"[""api""]",0
+714,Klarna,hackerone,11.2,"[""api""]",0
+715,Mintel,hackerone,11.2,"[""api""]",0
+716,HPE VDP,hackerone,11.2,"[""api""]",0
+717,Finnair Vulnerability Disclosure,hackerone,11.2,"[""api""]",0
+718,6sense VDP,hackerone,11.2,"[""api""]",0
+719,Peloton,hackerone,11.2,"[""api""]",0
+720,LPL Financial VDP,hackerone,11.2,"[""api""]",0
+721,Bumba,hackerone,11.2,"[""api""]",0
+722,Circle BBP,hackerone,11.2,"[""api""]",0
+723,Varonis,hackerone,11.2,"[""api""]",0
+724,AWS VDP,hackerone,11.2,"[""api""]",0
+725,Itaú Unibanco,hackerone,11.2,"[""api""]",0
+726,Liverpool Victoria,hackerone,11.2,"[""api""]",0
+727,Starbucks China,hackerone,11.2,"[""api""]",0
+728,Starbucks Japan,hackerone,11.2,"[""api""]",0
+729,BILL VDP,hackerone,11.2,"[""api""]",0
+730,Supabase,hackerone,11.2,"[""api""]",0
+731,NBA Public Bug Bounty,hackerone,11.2,"[""api""]",0
+732,PepsiCo VDP,hackerone,11.2,"[""api""]",0
+733,Recreation.gov,hackerone,11.2,"[""api""]",0
+734,QinetiQ Response,hackerone,11.2,"[""api""]",0
+735,Syfe,hackerone,11.2,"[""api""]",0
+736,Verily Life Sciences,hackerone,11.2,"[""api""]",0
+737,Adevinta,hackerone,11.2,"[""api""]",0
+738,HubSpot,hackerone,11.2,"[""api""]",0
+739,OPPO,hackerone,11.2,"[""api""]",0
+740,Kaseya,hackerone,11.2,"[""api""]",0
+741,Penn Entertainment,hackerone,11.2,"[""api""]",0
+742,Neon,hackerone,11.2,"[""api""]",0
+743,VF Corporation - VDP,hackerone,11.2,"[""api""]",0
+744,1Password - CTF,hackerone,11.2,"[""api""]",0
+745,1Password - Enterprise Password Manager,hackerone,11.2,"[""api""]",0
+746,The Browser Company of NYC,hackerone,11.2,"[""api""]",0
+747,Kraken Tech,hackerone,11.2,"[""api""]",0
+748,Hemi VDP,hackerone,11.2,"[""api""]",0
+749,Alibaba VDP,hackerone,11.2,"[""api""]",0
+750,Northern.tech,hackerone,11.2,"[""api""]",0
+751,Baird,hackerone,11.2,"[""api""]",0
+752,Whoop Bug Bounty,hackerone,11.2,"[""api""]",0
+753,Hyland Software,hackerone,11.2,"[""api""]",0
+754,Hex,hackerone,11.2,"[""api""]",0
+755,Hotmart (VDP),hackerone,11.2,"[""api""]",0
+756,Dust,hackerone,11.2,"[""api""]",0
+757,Ferrero,hackerone,11.2,"[""api""]",0
+758,MSCI,hackerone,11.2,"[""api""]",0
+759,Hexagon-VDP,hackerone,11.2,"[""api""]",0
+760,Experian,hackerone,11.2,"[""api""]",0
+761,Hertz VDP,hackerone,11.2,"[""api""]",0
+762,Worldpay,hackerone,11.2,"[""api""]",0
+763,Kong,hackerone,11.2,"[""api""]",0
+764,Citi Group,hackerone,11.2,"[""api""]",0
+765,Treasury Board of Canada Secretariat/Secrétariat du Conseil du Trésor du Canada,hackerone,11.2,"[""api""]",0
+766,Tucows (VDP),hackerone,11.2,"[""api""]",0
+767,Meesho,hackerone,11.2,"[""api""]",0
+768,"Braze, Inc.",hackerone,11.2,"[""api""]",0
+769,Banco Plata,hackerone,11.2,"[""api""]",0
+770,Hack The Box,hackerone,11.2,"[""api""]",0
+771,Lovable VDP,hackerone,11.2,"[""api""]",0
+772,NetScaler Public Program,hackerone,11.2,"[""api""]",0
+773,1win,hackerone,11.2,"[""api""]",0
+774,Vercel Open Source,hackerone,11.2,"[""api""]",0
+775,Regions Financial,hackerone,11.2,"[""api""]",0
+776,British Airways VDP,hackerone,11.2,"[""api""]",0
+777,Robinhood Markets,hackerone,11.2,"[""api""]",0
+778,Robinhood Markets Bounty,hackerone,11.2,"[""api""]",0
+779,BankUnited,hackerone,11.2,"[""api""]",0
+780,DocuSign,hackerone,11.2,"[""api""]",0
+781,MUFG VDP,hackerone,11.2,"[""api""]",0
+782,Vueling,hackerone,11.2,"[""api""]",0
+783,Henkel,hackerone,11.2,"[""api""]",0
+784,Mueller Water Products (VDP),hackerone,11.2,"[""api""]",0
+785,DoorDash,hackerone,11.2,"[""api""]",0
+786,Twilio,hackerone,11.2,"[""api""]",0
+787,Bose (VDP),hackerone,11.2,"[""api""]",0
+788,Anduril Industries,hackerone,11.2,"[""api""]",0
+789,Vercel Platform Protection,hackerone,11.2,"[""api""]",0
+790,MOD Supply Chain VDP,hackerone,11.2,"[""api""]",0
+791,Cognition,hackerone,11.2,"[""api""]",0
+792,Luminor,hackerone,11.2,"[""api""]",0
+793,Gogo VDP,hackerone,11.2,"[""api""]",0
+794,Tines (VDP),hackerone,11.2,"[""api""]",0
+795,Taxwell VDP,hackerone,11.2,"[""api""]",0
+796,Coupang Taiwan,hackerone,11.2,"[""api""]",0
+797,GetYourGuide VDP,hackerone,11.2,"[""api""]",0
+798,Clear Street Disclosure Program,hackerone,11.2,"[""api""]",0
+799,McGraw Hill,hackerone,11.2,"[""api""]",0
+800,PhonePe,hackerone,11.2,"[""api""]",0
+801,Epic Games VDP,hackerone,11.2,"[""api""]",0

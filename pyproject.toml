@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "Bug bounty opportunity finder with API discovery, change tracking, and temporal scoring"
 requires-python = ">=3.12"
 dependencies = [
-    "flask>=3.1",
     "pyyaml>=6.0",
     "requests>=2.32",
+    "textual>=6.0",
 ]
 
 [project.scripts]
-boutyhunter = "app:main"
+boutyhunter = "opportunity_finder:main"

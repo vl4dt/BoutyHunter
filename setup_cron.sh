@@ -16,7 +16,7 @@ echo "╚═══════════════════════�
 mkdir -p "$LOG_DIR"
 
 # Define the cron job command
-CRON_CMD="cd $SCRIPT_DIR && python3 opportunity_finder.py --mode all 2>&1 | tee -a $LOG_DIR/scan_\$(date +\%Y\%m\%d).log"
+CRON_CMD="cd $SCRIPT_DIR && .venv/bin/python opportunity_finder.py --scan 2>&1 | tee -a $LOG_DIR/scan_\$(date +\%Y\%m\%d).log"
 
 # Check if already set up
 if crontab -l 2>/dev/null | grep -q "BoutyHunter"; then
@@ -48,7 +48,7 @@ echo ""
 echo "📁 Logs saved to: $LOG_DIR/"
 echo ""
 echo "🔍 To check status anytime:"
-echo "   python3 opportunity_finder.py --status"
+echo "   .venv/bin/python opportunity_finder.py --status"
 echo ""
 echo "🗑️  To remove the cron job:"
 echo "   crontab -e  # then delete the BoutyHunter line"
