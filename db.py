@@ -29,7 +29,7 @@ SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS programs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    platform TEXT NOT NULL CHECK(platform IN ('hackerone','intigriti')),
+    platform TEXT NOT NULL,  -- 'hackerone', 'intigriti', 'bugcrowd', etc.
     url TEXT UNIQUE NOT NULL,
     focus_areas TEXT DEFAULT '[]',          -- JSON array: ["api","llm"]
     max_payout_usd INTEGER DEFAULT 0,
@@ -103,10 +103,13 @@ def upsert_program(program: dict[str, Any]) -> int:
     """Insert or update a program. Returns the program ID."""
     with get_connection() as conn:
         cursor = conn.execute(
-            """INSERT INTO programs (name, platform, url, focus_areas, max_payout_usd,
-               description, scope_details, status, score, last_seen, first_seen, updated_at,
-               researcher_count)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """INSERT INTO programs (
+               name, platform, url, focus_areas, max_payout_usd,
+               description, scope_details, status, score,
+               last_seen, first_seen, updated_at,
+               researcher_count,
+               is_new_program, has_active_event, event_details)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                ON CONFLICT(url) DO UPDATE SET
                    name = excluded.name,
                    platform = excluded.platform,
@@ -119,6 +122,9 @@ def upsert_program(program: dict[str, Any]) -> int:
                    last_seen = excluded.last_seen,
                    updated_at = excluded.updated_at,
                    researcher_count = excluded.researcher_count,
+                   is_new_program = excluded.is_new_program,
+                   has_active_event = excluded.has_active_event,
+                   event_details = excluded.event_details,
                    scan_count = scan_count + 1
                RETURNING id""",
             (
@@ -135,6 +141,9 @@ def upsert_program(program: dict[str, Any]) -> int:
                 program.get("first_seen", datetime.now().isoformat()),
                 datetime.now().isoformat(),
                 program.get("researcher_count"),
+                int(program.get("is_new_program", 0) or 0),
+                int(program.get("has_active_event", 0) or 0),
+                json.dumps(program.get("event_details")) if program.get("event_details") else None,
             ),
         )
         return cursor.fetchone()[0]
@@ -267,7 +276,7 @@ def detect_changes(program: dict[str, Any]) -> list[dict[str, Any]]:
     return changes
 
 def record_changes(program_id: int, changes: list[dict[str, Any]]):
-    """Record detected changes to the database."""
+    """Record detected changes to the database and update program tracking fields."""
     with get_connection() as conn:
         for change in changes:
             conn.execute(
@@ -280,6 +289,35 @@ def record_changes(program_id: int, changes: list[dict[str, Any]]):
                     change["detected_at"],
                 ),
             )
+
+        # Update last_change_type and last_change_at on the programs row
+        if changes:
+            latest = max(changes, key=lambda c: c["detected_at"])
+            conn.execute(
+                "UPDATE programs SET last_change_type = ?, last_change_at = ? WHERE id = ?",
+                (latest["change_type"], latest["detected_at"], program_id),
+            )
+
+        # Update temporal signal flags based on change types
+        change_types = {c["change_type"] for c in changes}
+        updates: list[str] = []
+        params: list[Any] = []
+        if "scope_added" in change_types:
+            updates.append("scope_recently_expanded = 1")
+        if "bounty_increased" in change_types:
+            updates.append("bounty_increased = 1")
+        if "event_started" in change_types or "vdp_to_paid" in change_types:
+            updates.append("has_active_event = 1")
+        if "new_program" in change_types:
+            updates.append("is_new_program = 1")
+
+        if updates:
+            params.append(program_id)
+            conn.execute(
+                f"UPDATE programs SET {', '.join(updates)} WHERE id = ?",
+                params,
+            )
+
         conn.commit()
 
 def get_recent_changes(
