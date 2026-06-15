@@ -528,9 +528,12 @@ class ScanWorker(Worker):  # type: ignore[misc]
 class ScanProgressScreen(ModalScreen):
     """Modal overlay showing scan progress with live log output."""
 
-    CSS = """
+    DEFAULT_CSS = """
     ModalScreen {
+        layout: grid;
+        grid-size: 1;
         align: center middle;
+        background: $background 60%;
     }
 
     #scan-overlay {
@@ -739,12 +742,12 @@ class ScanProgressScreen(ModalScreen):
 class DetailsScreen(ModalScreen):
     """Modal showing full details and strategy for a selected program."""
 
-    CSS = """
+    DEFAULT_CSS = """
     ModalScreen {
         layout: grid;
         grid-size: 1;
         align: center middle;
-        background: black 50%;
+        background: $background 60%;
     }
 
     #details-overlay {
