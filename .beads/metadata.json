@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "BoutyHunter",
+  "project_id": "3a29e907-7ff2-4ffb-8c38-dd175de8b14f"
+}
