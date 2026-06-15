@@ -740,6 +740,10 @@ class DetailsScreen(ModalScreen):
     """Modal showing full details and strategy for a selected program."""
 
     CSS = """
+    ModalScreen {
+        align: center middle;
+    }
+
     #details-overlay {
         width: 80%;
         height: 75%;
@@ -748,7 +752,6 @@ class DetailsScreen(ModalScreen):
         background: $surface;
         border: thick $accent;
         padding: 1 2;
-        align: center middle;
     }
 
     #details-content {
