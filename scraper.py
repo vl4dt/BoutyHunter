@@ -27,6 +27,8 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 
+from rate_limiter import retry_request, wait_for_platform
+
 logger = logging.getLogger("boutyhunter.scraper")
 
 # ─── Shared helpers ──────────────────────────────────────────────────
@@ -39,14 +41,30 @@ _USER_AGENT = (
 _HEADERS = {"User-Agent": _USER_AGENT, "Accept-Language": "en-US,en;q=0.9"}
 
 
-def _fetch_page(url: str, timeout: int = 20) -> BeautifulSoup | None:
-    """Fetch a URL and return parsed soup, or None on failure."""
+def _fetch_page(
+    url: str,
+    timeout: int = 20,
+    platform: str | None = None,
+) -> BeautifulSoup | None:
+    """Fetch a URL and return parsed soup, or None on failure.
+
+    Retries up to 3 times with exponential backoff on 429/5xx.  If *platform*
+    is given, respects the global platform cooldown before each attempt.
+    """
     try:
-        resp = requests.get(url, headers=_HEADERS, timeout=timeout)
-        resp.raise_for_status()
+        resp = retry_request(
+            requests.get,
+            url,
+            headers=_HEADERS,
+            timeout=timeout,
+            platform=platform,
+        )
+        if resp.status_code != 200:
+            logger.debug("_fetch_page %s: HTTP %s", url, resp.status_code)
+            return None
         return BeautifulSoup(resp.text, "lxml")
-    except Exception as e:
-        logger.debug("Failed to fetch %s: %s", url, e)
+    except requests.exceptions.RequestException as e:
+        logger.debug("Failed to fetch %s after retries: %s", url, e)
         return None
 
 
@@ -161,7 +179,20 @@ def _try_playwright(url: str, timeout_ms: int = 30_000) -> BeautifulSoup | None:
 
 # ─── HackerOne Scraper ──────────────────────────────────────────────
 
-def scrape_hackerone(url: str) -> dict[str, Any]:
+# ─── Platform key mapping (URL → platform for rate limiter) ──────────
+
+_PLATFORM_FROM_URL = {
+    "hackerone.com": "hackerone",
+    "intigriti.com": "intigriti",
+}
+
+
+def _platform_for_url(url: str) -> str | None:
+    """Guess the platform key from a URL."""
+    for domain, key in _PLATFORM_FROM_URL.items():
+        if domain in url:
+            return key
+    return None
     """Scrape a HackerOne program page.
 
     HackerOne is a JS-heavy SPA — stats (researcher count, etc.) are only
@@ -205,7 +236,7 @@ def scrape_hackerone(url: str) -> dict[str, Any]:
         return result
 
     # Strategy 2: Static HTML — meta tags + embedded script data
-    soup = _fetch_page(url)
+    soup = _fetch_page(url, platform="hackerone")
     if soup is not None:
         desc = ""
         for meta in soup.find_all("meta"):
@@ -287,7 +318,7 @@ def scrape_intigriti(url: str) -> dict[str, Any]:
         "accepted_submission_count": None,
     }
 
-    soup = _fetch_page(url)
+    soup = _fetch_page(url, platform="intigriti")
     if soup is None:
         return result
 
@@ -419,6 +450,10 @@ def scrape_programs(
 
     Iterates through programs, scrapes each public page, and merges the
     scraped data back into the program dict.  Returns the enriched list.
+
+    Respects global platform cooldowns — if any request to a platform gets
+    rate-limited, all subsequent requests to that platform pause until the
+    cooldown expires.
     """
     total = len(programs)
     for idx, prog in enumerate(programs, 1):
@@ -433,6 +468,10 @@ def scrape_programs(
 
         platform = prog.get("platform", "")
         url = prog.get("url", "")
+
+        # Wait for any global cooldown before scraping this program
+        if platform:
+            wait_for_platform(platform)
         if not platform or not url:
             continue
 

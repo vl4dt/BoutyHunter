@@ -28,6 +28,8 @@ from typing import Any
 
 import requests
 
+from rate_limiter import retry_request
+
 logger = logging.getLogger("boutyhunter.api")
 
 # ─── Config Loading ──────────────────────────────────────────────────
@@ -42,7 +44,6 @@ def load_config(config_path: str | Path = None) -> dict[str, Any]:
     with open(config_path) as f:
         return yaml.safe_load(f) or {}
 
-# ─── Base Platform Client ──────────────────────────────────────────────
 
 class BasePlatformClient(ABC):
     """Shared logic for all platform API clients.
@@ -172,8 +173,10 @@ class IntigritiClient(BasePlatformClient):
             page_size = 100
 
             while True:
-                resp = self.session.get(
+                resp = retry_request(
+                    self.session.get,
                     f"{self.BASE_URL}{self.PROGRAMS_ENDPOINT}",
+                    platform=self.PLATFORM_KEY,
                     params={"limit": page_size, "offset": offset},
                     timeout=30,
                 )
@@ -294,8 +297,10 @@ class HackerOneClient(BasePlatformClient):
             page_number = 1
 
             while True:
-                resp = self.session.get(
+                resp = retry_request(
+                    self.session.get,
                     f"{self.BASE_URL}{self.PROGRAMS_ENDPOINT}",
+                    platform=self.PLATFORM_KEY,
                     params={"page[size]": page_size, "page[number]": page_number},
                     timeout=30,
                 )
