@@ -1,0 +1,30 @@
+{
+  "name": "boutyhunter",
+  "version": "1.0.0",
+  "description": "BoutyHunter is a tool that analyzes bug bounty programs and scores them based on multiple factors including: - Competition level - Triage speed - Focus area bonuses (with LLM-based validation) - Payout amounts",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vl4dt/BoutyHunter.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vl4dt/BoutyHunter/issues"
+  },
+  "homepage": "https://github.com/vl4dt/BoutyHunter#readme",
+  "dependencies": {
+    "puppeteer": "^25.1.0"
+  },
+  "allowScripts": {
+    "puppeteer@25.1.0": true
+  }
+}

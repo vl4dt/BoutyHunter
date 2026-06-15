@@ -173,6 +173,7 @@ def run_api_scan(
         record_changes, get_recent_changes, get_temporal_boost,
     )
     from scoring import score_program
+    from scraper import scrape_programs
 
     init_db()
     programs = client.discover_programs(
@@ -180,6 +181,12 @@ def run_api_scan(
         platform_filter=platform_filter,
         progress_callback=progress_callback,
     )
+
+    # Scrape public pages for metrics not in the API (researcher count)
+    if programs:
+        _cb(progress_callback, "scraping", 0, len(programs),
+            f"Scraping {len(programs)} program pages for researcher counts...")
+        scrape_programs(programs, progress_callback=progress_callback)
     _cb(progress_callback, "scoring", 0, len(programs),
         f"Scoring {len(programs)} programs...")
 

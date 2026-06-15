@@ -157,58 +157,79 @@ def _estimate_researcher_pressure(program: dict) -> float:
 
     Returns an adjustment (-2.5 to +2.5) applied on top of the platform baseline.
     Negative = less competition than average, positive = more.
-    The Intigriti API doesn't expose researcher count directly, so we estimate from:
+
+    Uses actual scraped researcher_count when available; otherwise estimates from:
       - Bounty amount ($0 VDPs attract fewer hunters)
       - Program age (newer programs are less known)
       - Scope size (larger scope attracts more researchers)
     """
     adjustment = 0.0
 
-    # Bounty signal: $0 max bounty → VDP → significantly less competition
-    max_payout = program.get("max_payout_usd", 0) or 0
-    if max_payout == 0:
-        adjustment -= 1.5  # VDPs have much less competition
-    elif max_payout < 500:
-        adjustment -= 0.8  # low bounty = moderate deterrent
-    elif max_payout > 10000:
-        adjustment += 1.2  # high bounty attracts many hunters
-    elif max_payout > 5000:
-        adjustment += 0.6
-
-    # Age signal: newer programs are less known → fewer researchers
-    first_seen = program.get("first_seen", "")
-    if first_seen:
-        try:
-            from datetime import datetime as _dt
-            age_days = (_dt.now() - _dt.fromisoformat(first_seen)).days
-            if age_days <= 7:
-                adjustment -= 1.5  # brand new, barely anyone knows
-            elif age_days <= 30:
-                adjustment -= 0.9
-            elif age_days <= 90:
-                adjustment -= 0.4
-            elif age_days > 365:
-                adjustment += 0.4  # well-known program
-        except (ValueError, TypeError):
-            pass
-
-    # Scope signal: larger scope attracts more researchers
-    scope_raw = program.get("scope_details", {})
-    if isinstance(scope_raw, str):
-        try:
-            import json as _json
-            scope_obj = _json.loads(scope_raw)
-        except Exception:
-            scope_obj = {}
+    # ── Use actual researcher count if available (scraped from public page) ──
+    rc = program.get("researcher_count")
+    if rc is not None and isinstance(rc, int):
+        if rc <= 5:
+            adjustment -= 2.0  # virtually no competition
+        elif rc <= 20:
+            adjustment -= 1.0  # very few researchers
+        elif rc <= 50:
+            adjustment -= 0.3  # manageable crowd
+        elif rc <= 200:
+            adjustment += 0.3  # moderate competition
+        elif rc <= 500:
+            adjustment += 1.0  # well-contested program
+        elif rc <= 1000:
+            adjustment += 1.8  # very competitive
+        else:
+            adjustment += 2.5  # extreme competition (e.g., major tech companies)
     else:
-        scope_obj = scope_raw or {}
-    asset_count = len(scope_obj.get("assets", []))
-    if asset_count > 20:
-        adjustment += 0.8
-    elif asset_count > 10:
-        adjustment += 0.4
-    elif asset_count <= 3:
-        adjustment -= 0.3  # tiny scope = fewer entry points
+        # ── Fallback estimation signals ──
+
+        # Bounty signal: $0 max bounty → VDP → significantly less competition
+        max_payout = program.get("max_payout_usd", 0) or 0
+        if max_payout == 0:
+            adjustment -= 1.5  # VDPs have much less competition
+        elif max_payout < 500:
+            adjustment -= 0.8  # low bounty = moderate deterrent
+        elif max_payout > 10000:
+            adjustment += 1.2  # high bounty attracts many hunters
+        elif max_payout > 5000:
+            adjustment += 0.6
+
+        # Age signal: newer programs are less known → fewer researchers
+        first_seen = program.get("first_seen", "")
+        if first_seen:
+            try:
+                from datetime import datetime as _dt
+                age_days = (_dt.now() - _dt.fromisoformat(first_seen)).days
+                if age_days <= 7:
+                    adjustment -= 1.5  # brand new, barely anyone knows
+                elif age_days <= 30:
+                    adjustment -= 0.9
+                elif age_days <= 90:
+                    adjustment -= 0.4
+                elif age_days > 365:
+                    adjustment += 0.4  # well-known program
+            except (ValueError, TypeError):
+                pass
+
+        # Scope signal: larger scope attracts more researchers
+        scope_raw = program.get("scope_details", {})
+        if isinstance(scope_raw, str):
+            try:
+                import json as _json
+                scope_obj = _json.loads(scope_raw)
+            except Exception:
+                scope_obj = {}
+        else:
+            scope_obj = scope_raw or {}
+        asset_count = len(scope_obj.get("assets", []))
+        if asset_count > 20:
+            adjustment += 0.8
+        elif asset_count > 10:
+            adjustment += 0.4
+        elif asset_count <= 3:
+            adjustment -= 0.3  # tiny scope = fewer entry points
 
     return round(max(-2.5, min(2.5, adjustment)), 1)
 

@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS programs (
     has_active_event INTEGER DEFAULT 0,     -- 1 if there's a hacking contest/bug bash
     event_details TEXT,                     -- JSON: details about active events
 
+    researcher_count INTEGER DEFAULT NULL,   -- number of researchers on the program (scraped)
+
     -- Tracking metadata
     scan_count INTEGER DEFAULT 0,           -- how many scans have seen this program
     last_change_type TEXT,                  -- most recent change detected
@@ -102,8 +104,9 @@ def upsert_program(program: dict[str, Any]) -> int:
     with get_connection() as conn:
         cursor = conn.execute(
             """INSERT INTO programs (name, platform, url, focus_areas, max_payout_usd,
-               description, scope_details, status, score, last_seen, first_seen, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+               description, scope_details, status, score, last_seen, first_seen, updated_at,
+               researcher_count)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                ON CONFLICT(url) DO UPDATE SET
                    name = excluded.name,
                    platform = excluded.platform,
@@ -115,6 +118,7 @@ def upsert_program(program: dict[str, Any]) -> int:
                    score = excluded.score,
                    last_seen = excluded.last_seen,
                    updated_at = excluded.updated_at,
+                   researcher_count = excluded.researcher_count,
                    scan_count = scan_count + 1
                RETURNING id""",
             (
@@ -130,6 +134,7 @@ def upsert_program(program: dict[str, Any]) -> int:
                 datetime.now().isoformat(),
                 program.get("first_seen", datetime.now().isoformat()),
                 datetime.now().isoformat(),
+                program.get("researcher_count"),
             ),
         )
         return cursor.fetchone()[0]
